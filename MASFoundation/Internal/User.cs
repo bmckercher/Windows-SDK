@@ -90,6 +90,10 @@ namespace MASFoundation.Internal
             return MAGRequests.GetUserInfoAsync(_config, _device, this);
         }
 
+        public async Task LoginAsync()
+        {
+        }
+
         async Task UpdateTokens(RequestTokenResponseData data)
         {
             _accessToken = data.AccessToken;

@@ -5,7 +5,7 @@ namespace MASFoundation.Internal.Data
     internal class RegisterResponseData : HttpResponseBaseData
     {
         public RegisterResponseData(HttpTextResponse response) :
-            base(response, false)
+            base(response, ResponseType.PlainText)
         {
             Certificate = response.Text;
             DeviceIdentifier = response.Headers["device-identifier"];

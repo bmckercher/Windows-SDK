@@ -2,21 +2,51 @@
 
 namespace MASFoundation.Internal
 {
-    internal class Logger
+    internal class Logger : ILogger
     {
         public void Info(string message)
         {
-            Debug.WriteLine(message, "Info");
+            if (MAS.LogLevel == LogLevel.Full)
+            {
+                if (MAS.Logger != null)
+                {
+                    MAS.Logger.Info(message);
+                }
+                else
+                {
+                    Debug.WriteLine(message, "Info");
+                }
+            }
         }
 
         public void Warn(string message)
         {
-            Debug.WriteLine(message, "Warning");
+            if (MAS.LogLevel == LogLevel.Full || MAS.LogLevel == LogLevel.ErrorOnly)
+            {
+                if (MAS.Logger != null)
+                {
+                    MAS.Logger.Warn(message);
+                }
+                else
+                {
+                    Debug.WriteLine(message, "Warning");
+                }
+            }
         }
 
         public void Error(string message)
         {
-            Debug.WriteLine(message, "Error");
+            if (MAS.LogLevel == LogLevel.Full || MAS.LogLevel == LogLevel.ErrorOnly)
+            {
+                if (MAS.Logger != null)
+                {
+                    MAS.Logger.Error(message);
+                }
+                else
+                {
+                    Debug.WriteLine(message, "Error");
+                }
+            }
         }
     }
 }

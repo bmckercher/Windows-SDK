@@ -4,19 +4,19 @@ namespace MASFoundation
 {
     public class MASException : Exception
     {
-        public MASException(ErrorKind kind, string message) :
+        public MASException(ErrorCode kind, string message) :
             base(message)
         {
-            MASErrorCode = (int)kind;
+            MASErrorCode = kind;
         }
 
-        public MASException(ErrorKind kind, string message, Exception innerException) :
+        public MASException(ErrorCode kind, string message, Exception innerException) :
             base(message, innerException)
         {
-            MASErrorCode = (int)kind;
+            MASErrorCode = kind;
         }
 
-        public int MASErrorCode
+        public ErrorCode MASErrorCode
         {
             get;
             private set;

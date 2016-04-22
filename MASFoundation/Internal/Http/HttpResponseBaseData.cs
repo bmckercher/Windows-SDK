@@ -5,7 +5,7 @@ namespace MASFoundation.Internal.Http
 {
     internal class HttpResponseBaseData
     {
-        public HttpResponseBaseData(HttpTextResponse response, bool jsonExpected = true)
+        public HttpResponseBaseData(HttpTextResponse response, ResponseType responseType = ResponseType.Unknown)
         {
             string error = null;
             string errorDescription = null;
@@ -15,16 +15,33 @@ namespace MASFoundation.Internal.Http
                 _response = response;
                 _responseJson = JsonObject.Parse(response.Text);
 
-                error = _responseJson.GetNamedString("error");
-                errorDescription = _responseJson.GetNamedString("error_description");
+                error = _responseJson.GetNamedString("error", null);
+                errorDescription = _responseJson.GetNamedString("error_description", null);
             }
             catch
             {
             }
 
-            if (!_response.IsSuccessful || (jsonExpected && _responseJson == null) || error != null || errorDescription != null)
+            if (!_response.IsSuccessful)
             {
-                ErrorFactory.throwError(ErrorKind.HttpRequestError, new HttpRequestException(response, error, errorDescription));
+                // TODO return a better error here
+                ErrorFactory.ThrowError(ErrorCode.NetworkRequestTimedOut, 
+                    new HttpRequestException(response, error, errorDescription));
+            }
+            else
+            {
+                if ((responseType == ResponseType.Json || responseType == ResponseType.ScimJson) && _responseJson == null)
+                {
+                    ErrorFactory.ThrowError(ErrorCode.ResponseSerializationFailedToParseResponse,
+                        new HttpRequestException(response, null, null));
+                }
+
+                if (error != null || errorDescription != null)
+                {
+                    // TODO return a better error here
+                    ErrorFactory.ThrowError(ErrorCode.NetworkRequestTimedOut,
+                        new HttpRequestException(response, error, errorDescription));
+                }
             }
         }
         

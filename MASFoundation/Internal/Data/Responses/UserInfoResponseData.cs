@@ -11,7 +11,7 @@ namespace MASFoundation.Internal.Data
     internal class UserInfoResponseData : HttpResponseBaseData
     {
         public UserInfoResponseData(HttpTextResponse response) :
-            base(response)
+            base(response, ResponseType.Json)
         {
             Sub = _responseJson.GetNamedString("sub");
             Name = _responseJson.GetNamedString("name");

@@ -5,7 +5,7 @@ namespace MASFoundation.Internal.Data
     internal class RequestTokenResponseData : HttpResponseBaseData
     {
         public RequestTokenResponseData(HttpTextResponse response) :
-            base(response)
+            base(response, ResponseType.Json)
         {
             AccessToken = _responseJson.GetNamedString("access_token");
             TokenType = _responseJson.GetNamedString("token_type");

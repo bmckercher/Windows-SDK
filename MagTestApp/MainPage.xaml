@@ -9,6 +9,11 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <GridView Margin="8">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -23,6 +28,9 @@
             <Button x:Name="ResetBtn" Click="ResetBtn_Click" Width="100" Height="100" Content="Reset"/>
         </GridView>
 
-        <ProgressBar x:Name="BusyStatus" Background="Transparent" Visibility="Collapsed" IsIndeterminate="True" HorizontalAlignment="Stretch" VerticalAlignment="Center" Height="100" />
+        <ProgressBar x:Name="BusyStatus" Grid.Row="1" Background="Transparent" Visibility="Collapsed" IsIndeterminate="True" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+
+        <TextBox IsReadOnly="True" Grid.Row="2" x:Name="DebugInfo" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+
     </Grid>
 </Page>

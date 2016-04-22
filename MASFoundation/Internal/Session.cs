@@ -1,4 +1,5 @@
 ﻿using MASFoundation.Internal.Http;
+using System;
 using System.Threading.Tasks;
 
 namespace MASFoundation.Internal
@@ -24,73 +25,126 @@ namespace MASFoundation.Internal
             }
         }
 
-        public async Task StartAsync(string fileName)
+        public bool IsRegistered
         {
+            get
+            {
+                return User != null && Device != null && Device.IsRegistered;
+            }
+        }
+
+        public event EventHandler<EventArgs> LoginRequested;
+
+        public async Task StartAsync(string fileName, RegistrationKind regKind)
+        {
+            Log.Info("Framework starting...");
+
+            _registrationKind = regKind;
+
             // Load configuration data
             _config = new Configuration();
             await _config.LoadAsync(fileName);
 
+            // Load device and any previous registration info.
             Device = new Device(_config);
             await Device.InitializeAsync();
 
-            // Attempt client device registration if scope allows
-            if (!Device.IsRegistered && _config.HasScope(ScopeNames.MssoClientRegister))
-            {
-                await Device.RegisterWithClientAsync();
-            }
+            // Authorization providers not supported in yet
+            //var response = await MAGRequests.GetAuthorizationProviders(_config, Device);
 
+            // load user and any previous access token or idtoken info
             User = new User(_config, Device);
             await User.InitializeAsync();
+
+            if (!Device.IsRegistered)
+            {
+                switch (_registrationKind)
+                {
+
+                    case RegistrationKind.Client:
+                        if (!_config.HasScope(ScopeNames.MssoClientRegister))
+                        {
+                            ErrorFactory.ThrowError(ErrorCode.DeviceRegistrationAttemptedWithUnregisteredScope);
+                        }
+
+                        await Device.RegisterWithClientAsync();
+                        await User.LoginAsync();
+
+                        break;
+                    case RegistrationKind.User:
+                        // Ask for login with user device registration
+                        LoginRequested?.Invoke(null, EventArgs.Empty);
+                        break;
+                    default:
+                        ErrorFactory.ThrowError(ErrorCode.DeviceRegistrationAttemptedWithUnregisteredScope);
+                        break;
+
+                }
+            }
+
+            Log.Info("Framework started");
         }
 
         public async Task StopAsync()
         {
+            Log.Info("Framework stopping...");
+
             HttpRequester.CancelAll();
+
+            Log.Info("Framework stopped");
         }
 
         public async Task ResetAsync()
         {
+            Log.Info("Framework reseting...");
+
             await SecureStorage.ResetAsync();
 
             await CertManager.UninstallAsync();
 
             HttpRequester.CancelAll();
+
+            Log.Info("Framework reset");
         }
 
         public async Task LoginUserAsync(string username, string password)
         {
-            if (User == null || Device == null)
-            {
-                // TODO throw session not started!
-                return;
-            }
+            Log.Info("Logging in user...");
 
-            // We we do not have client registration flow set, do a device with user registration flow if needed
-            if (!_config.HasScope(ScopeNames.MssoClientRegister) && (!Device.IsRegistered || Device.RegisteredUsername != username))
+            if (!Device.IsRegistered && _registrationKind == RegistrationKind.User)
             {
-                //Registering the Device with User flow
+                Log.Info("User device registration starting...");
                 await Device.RegisterWithUserAsync(username, password);
+                Log.Info("User device registration complete");
             }
 
             await User.LoginAsync(username, password);
+
+            Log.Info("User logged in");
         }
 
         public async Task LogoffUserAsync()
         {
-            if (User == null || Device == null)
+            Log.Info("Logging out user...");
+
+            if (!IsRegistered)
             {
-                // TODO throw session not started!
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
                 return;
             }
 
             await User.LogoffAsync();
+
+            Log.Info("Logged out user.");
         }
 
         public async Task UnregisterDevice()
         {
-            if (Device == null)
+            Log.Info("Deregistering device...");
+
+            if (!IsRegistered)
             {
-                // TODO throw session not started!
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
                 return;
             }
 
@@ -98,14 +152,17 @@ namespace MASFoundation.Internal
 
             // Remove all stored data since we unregistered the device
             await ResetAsync();
+
+            Log.Info("Deregistered device");
         }
 
-        public Logger Log { get; private set; }
+        public ILogger Log { get; set; }
 
         public Device Device { get; private set; }
 
         public User User { get; private set; }
 
         Configuration _config;
+        RegistrationKind _registrationKind = RegistrationKind.Client;
     }
 }

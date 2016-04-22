@@ -16,18 +16,26 @@ namespace MASFoundation.Internal
         public async Task LoadAsync(string fileName)
         {
             JsonObject jsonObject = null;
+            string jsonText = null;
 
             try
             {
                 var dataUri = new Uri("ms-appx:///" + fileName, UriKind.Absolute);
                 var file = await StorageFile.GetFileFromApplicationUriAsync(dataUri);
-                var jsonText = await FileIO.ReadTextAsync(file);
+                jsonText = await FileIO.ReadTextAsync(file);
+            }
+            catch (Exception e)
+            {
+                ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedFileNotFound, e);
+            }
 
+            try
+            {
                 jsonObject = JsonObject.Parse(jsonText);
             }
             catch (Exception e)
             {
-                ErrorFactory.throwError(ErrorKind.UnableToLoadConfigurationFile, e);
+                ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedJsonSerialization, e);
             }
 
             try
@@ -39,7 +47,7 @@ namespace MASFoundation.Internal
             }
             catch (Exception e)
             {
-                ErrorFactory.throwError(ErrorKind.InvalidConfigurationFile, e);
+                ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedJsonValidation, e);
             }
         }
 

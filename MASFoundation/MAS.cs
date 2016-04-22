@@ -1,5 +1,6 @@
 ﻿using MASFoundation.Internal;
 using MASFoundation.Internal.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,24 +13,48 @@ namespace MASFoundation
         static MAS()
         {
             ConfigFileName = "msso_config.json";
+            RegistrationKind = RegistrationKind.Client;
+
+            Session.Instance.LoginRequested += Instance_LoginRequested;
+        }
+
+        private static void Instance_LoginRequested(object sender, EventArgs e)
+        {
+            LoginRequested?.Invoke(null, e);
         }
 
         /// <summary>
         /// Name of the configuration file.  This gives the ability to set the file's name to a custom value.
         /// </summary>
-        public static string ConfigFileName
-        {
-            get;
-            set;
-        }
-    
+        public static string ConfigFileName { get; set; }
+
+        /// <summary>
+        /// Requested registration flow (client or user)
+        /// </summary>
+        public static RegistrationKind RegistrationKind { get; set; }
+
+        /// <summary>
+        /// Logger to use for debug messages
+        /// </summary>
+        public static ILogger Logger { get; set; }
+
+        /// <summary>
+        /// What to log: full, errors only, or none
+        /// </summary>
+        public static LogLevel LogLevel { get; set; }
+
+        /// <summary>
+        /// Login is requested as appart of user registration flow for this device
+        /// </summary>
+        public static event EventHandler LoginRequested;
+
         /// <summary>
         /// Starts the lifecycle of the MAS processes.  This includes the registration of the application to the Gateway, if the network is available.
         /// </summary>
         /// <returns></returns>
         public static Task StartAsync()
         {
-            return Session.Instance.StartAsync(ConfigFileName);
+            return Session.Instance.StartAsync(ConfigFileName, RegistrationKind);
         }
 
         /// <summary>
@@ -87,14 +112,14 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<MASTextResponse> DeleteFromAsync(string endPointPath, 
+        public static async Task<TextResponse> DeleteFromAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
-            MASResponseType responseType)
+            ResponseType responseType)
         {
-            if (Session.Instance.Device == null || !Session.Instance.Device.IsRegistered)
+            if (!Session.Instance.IsRegistered)
             {
-                // TODO throw device not registered error
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
             var builder = new HttpUrlBuilder(endPointPath);
@@ -107,7 +132,7 @@ namespace MASFoundation
                 }
             }
 
-            var headers = await SetupRequestHeaders(headerInfo, MASRequestType.None, responseType);
+            var headers = await SetupRequestHeaders(headerInfo, RequestType.None, responseType);
 
             return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
             {
@@ -126,14 +151,14 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<MASTextResponse> GetFromAsync(string endPointPath, 
+        public static async Task<TextResponse> GetFromAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
-            MASResponseType responseType)
+            ResponseType responseType)
         {
-            if (Session.Instance.Device == null || !Session.Instance.Device.IsRegistered)
+            if (!Session.Instance.IsRegistered)
             {
-                // TODO throw device not registered error
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
             var builder = new HttpUrlBuilder(endPointPath);
@@ -146,7 +171,7 @@ namespace MASFoundation
                 }
             }
 
-            var headers = await SetupRequestHeaders(headerInfo, MASRequestType.None, responseType);
+            var headers = await SetupRequestHeaders(headerInfo, RequestType.None, responseType);
 
             return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
             {
@@ -166,15 +191,15 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<MASTextResponse> PostToAsync(string endPointPath,
+        public static async Task<TextResponse> PostToAsync(string endPointPath,
             string body,
             IDictionary<string, string> headerInfo,
-            MASRequestType requestType,
-            MASResponseType responseType)
+            RequestType requestType,
+            ResponseType responseType)
         {
-            if (Session.Instance.Device == null || !Session.Instance.Device.IsRegistered)
+            if (!Session.Instance.IsRegistered)
             {
-                // TODO throw device not registered error
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
             var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
@@ -198,15 +223,67 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static Task<MASTextResponse> PostToAsync(string endPointPath, 
+        public static Task<TextResponse> PostToAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
-            MASRequestType requestType,
-            MASResponseType responseType)
+            RequestType requestType,
+            ResponseType responseType)
         {
             var body = FormatBody(requestType, parameterInfo);
 
             return PostToAsync(endPointPath, body, headerInfo, requestType, responseType);
+        }
+
+        /// <summary>
+        /// This method makes HTTP PATCH calls to an endpoint.
+        /// </summary>
+        /// <param name="endPointPath"></param>
+        /// <param name="body"></param>
+        /// <param name="headerInfo"></param>
+        /// <param name="requestType"></param>
+        /// <param name="responseType"></param>
+        /// <returns></returns>
+        public static async Task<TextResponse> PatchToAsync(string endPointPath,
+            string body,
+            IDictionary<string, string> headerInfo,
+            RequestType requestType,
+            ResponseType responseType)
+        {
+            if (!Session.Instance.IsRegistered)
+            {
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
+            }
+
+            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
+
+            return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
+            {
+                Url = endPointPath,
+                Method = HttpMethod.Patch,
+                Headers = headers,
+                Certificate = Session.Instance.Device.Certificate,
+                Body = body ?? string.Empty
+            }));
+        }
+
+        /// <summary>
+        /// This method makes HTTP PATCH calls to an endpoint.
+        /// </summary>
+        /// <param name="endPointPath"></param>
+        /// <param name="parameterInfo"></param>
+        /// <param name="headerInfo"></param>
+        /// <param name="requestType"></param>
+        /// <param name="responseType"></param>
+        /// <returns></returns>
+        public static Task<TextResponse> PatchToAsync(string endPointPath,
+            IDictionary<string, string> parameterInfo,
+            IDictionary<string, string> headerInfo,
+            RequestType requestType,
+            ResponseType responseType)
+        {
+            var body = FormatBody(requestType, parameterInfo);
+
+            return PatchToAsync(endPointPath, body, headerInfo, requestType, responseType);
         }
 
         /// <summary>
@@ -218,15 +295,15 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<MASTextResponse> PutTo(string endPointPath,
+        public static async Task<TextResponse> PutToAsync(string endPointPath,
             string body,
             IDictionary<string, string> headerInfo,
-            MASRequestType requestType,
-            MASResponseType responseType)
+            RequestType requestType,
+            ResponseType responseType)
         {
-            if (Session.Instance.Device == null || !Session.Instance.Device.IsRegistered)
+            if (!Session.Instance.IsRegistered)
             {
-                // TODO throw device not registered error
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
             var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
@@ -250,24 +327,24 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static Task<MASTextResponse> PutTo(string endPointPath, 
+        public static Task<TextResponse> PutToAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
-            MASRequestType requestType,
-            MASResponseType responseType)
+            RequestType requestType,
+            ResponseType responseType)
         {
             var body = FormatBody(requestType, parameterInfo);
 
-            return PutTo(endPointPath, body, headerInfo, requestType, responseType);
+            return PutToAsync(endPointPath, body, headerInfo, requestType, responseType);
         }
 
-        static string FormatBody(MASRequestType type, IDictionary<string, string> parameterInfo)
+        static string FormatBody(RequestType type, IDictionary<string, string> parameterInfo)
         {
             string body = string.Empty;
 
             switch (type)
             {
-                case MASRequestType.FormUrlEncoded:
+                case RequestType.FormUrlEncoded:
                     {
                         HttpUrlBuilder builder = new HttpUrlBuilder();
                         foreach (var item in parameterInfo)
@@ -285,7 +362,7 @@ namespace MASFoundation
             return body;
         }
 
-        static async Task<Dictionary<string, string>> SetupRequestHeaders(IDictionary<string, string> givenHeaders, MASRequestType requestType, MASResponseType responseType)
+        static async Task<Dictionary<string, string>> SetupRequestHeaders(IDictionary<string, string> givenHeaders, RequestType requestType, ResponseType responseType)
         {
             var deviceMagId = Session.Instance.Device.MagId;
             var headers = new Dictionary<string, string>
@@ -307,12 +384,12 @@ namespace MASFoundation
                 }
             }
 
-            if (responseType != MASResponseType.Unknown)
+            if (responseType != ResponseType.Unknown)
             {
                 headers[HttpHeaders.Accept] = ToHeaderValue(responseType);
             }
 
-            if (requestType != MASRequestType.None)
+            if (requestType != RequestType.None)
             {
                 headers[HttpHeaders.ContentType] = ToHeaderValue(requestType);
             }
@@ -320,47 +397,47 @@ namespace MASFoundation
             return headers;
         }
 
-        static string ToHeaderValue(MASResponseType type)
+        static string ToHeaderValue(ResponseType type)
         {
             switch(type)
             {
                 default:
-                case MASResponseType.Unknown:
+                case ResponseType.Unknown:
                     return "";
-                case MASResponseType.Json:
+                case ResponseType.Json:
                     return HttpContentTypes.Json;
-                case MASResponseType.PlainText:
+                case ResponseType.PlainText:
                     return HttpContentTypes.Plain;
-                case MASResponseType.ScimJson:
+                case ResponseType.ScimJson:
                     return HttpContentTypes.ScimJson;
-                case MASResponseType.Xml:
+                case ResponseType.Xml:
                     return HttpContentTypes.Xml;
             }
         }
 
-        static string ToHeaderValue(MASRequestType type)
+        static string ToHeaderValue(RequestType type)
         {
             switch (type)
             {
                 default:
-                case MASRequestType.None:
+                case RequestType.None:
                     return "";
-                case MASRequestType.Json:
+                case RequestType.Json:
                     return HttpContentTypes.Json;
-                case MASRequestType.PlainText:
+                case RequestType.PlainText:
                     return HttpContentTypes.Plain;
-                case MASRequestType.ScimJson:
+                case RequestType.ScimJson:
                     return HttpContentTypes.ScimJson;
-                case MASRequestType.FormUrlEncoded:
+                case RequestType.FormUrlEncoded:
                     return HttpContentTypes.UrlEncoded;
-                case MASRequestType.Xml:
+                case RequestType.Xml:
                     return HttpContentTypes.Xml;
             }
         }
 
-        static MASTextResponse ToMASResponse(HttpTextResponse response)
+        static TextResponse ToMASResponse(HttpTextResponse response)
         {
-            return new MASTextResponse()
+            return new TextResponse()
             {
                 Headers = response.Headers,
                 IsSuccessful = response.IsSuccessful,

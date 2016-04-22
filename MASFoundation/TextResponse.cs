@@ -2,7 +2,7 @@
 
 namespace MASFoundation
 {
-    public class MASTextResponse
+    public class TextResponse
     {
         public IDictionary<string, string> Headers { get; internal set; }
         public string Text { get; internal set; }

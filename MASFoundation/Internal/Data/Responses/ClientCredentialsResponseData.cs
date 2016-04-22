@@ -5,7 +5,7 @@ namespace MASFoundation.Internal.Data
     internal class ClientCredentialsResponseData : HttpResponseBaseData
     {
         public ClientCredentialsResponseData(HttpTextResponse response) :
-            base(response)
+            base(response, ResponseType.Json)
         {
             ClientId = _responseJson.GetNamedString("client_id");
             ClientSecret = _responseJson.GetNamedString("client_secret");

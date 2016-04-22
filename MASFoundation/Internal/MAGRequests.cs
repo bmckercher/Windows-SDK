@@ -39,6 +39,32 @@ namespace MASFoundation.Internal
             });
         }
 
+        public static async Task<AuthorizationProvidersResponseData> GetAuthorizationProviders(Configuration config, Device device)
+        {
+            var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.Authorization);
+
+            var scope = config.DefaultClientId.Scope;
+
+            var urlBuilder = new HttpUrlBuilder(url);
+            urlBuilder.Add("client_id", device.ClientId);
+            urlBuilder.Add("redirect_uri", "");
+            urlBuilder.Add("scope", scope);
+            urlBuilder.Add("response_type", "code");
+            urlBuilder.Add("display", "social_login");
+
+            var headers = new Dictionary<string, string>
+            {
+                { HttpHeaders.Accept, HttpContentTypes.Json }
+            };
+
+            return await HttpRequester.RequestAsync<AuthorizationProvidersResponseData>(new HttpRequestInfo()
+            {
+                Method = HttpMethod.Get,
+                Url = urlBuilder.ToString(),
+                Headers = headers,
+            });
+        }
+
         public static async Task<RegisterResponseData> RegisterDeviceAsync(Configuration config, Device device, string csr)
         {
             var url = config.GetEndpointPath(config.Mag.SystemEndpoints.DeviceClientRegister);
@@ -170,6 +196,35 @@ namespace MASFoundation.Internal
             builder.Add("scope", scope);
             builder.Add("grant_type", idTokenType);
             builder.Add("assertion", idToken);
+
+            return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
+            {
+                Method = HttpMethod.Post,
+                Url = url,
+                Headers = headers,
+                Body = builder.ToString()
+            });
+        }
+
+        public static Task<RequestTokenResponseData> RequestAccessTokenAnonymouslyAsync(Configuration config, Device device)
+        {
+            var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.Token);
+
+            var headers = new Dictionary<string, string>
+            {
+                { HttpHeaders.Authorization, device.AuthHeaderValue },
+                { "mag-identifier", device.MagId },
+                { HttpHeaders.ContentType, HttpContentTypes.UrlEncoded },
+                { HttpHeaders.Accept, HttpContentTypes.Json }
+            };
+
+            var scope = config.DefaultClientId.Scope;
+
+            var builder = new HttpUrlBuilder();
+            builder.Add("scope", scope);
+            builder.Add("client_id", device.ClientId);
+            builder.Add("client_secret", device.ClientSecret);
+            builder.Add("grant_type", "client_credentials");
 
             return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {

@@ -1,11 +1,12 @@
 ﻿namespace MASFoundation
 {
-    public enum MASResponseType
+    public enum RequestType
     {
-        Unknown,
+        None,
         Json,
         ScimJson,
         PlainText,
+        FormUrlEncoded,
         Xml
     }
 }

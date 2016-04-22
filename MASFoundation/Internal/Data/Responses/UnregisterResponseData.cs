@@ -5,7 +5,7 @@ namespace MASFoundation.Internal.Data
     internal class UnregisterResponseData : HttpResponseBaseData
     {
         public UnregisterResponseData(HttpTextResponse response) :
-            base(response, false)
+            base(response, ResponseType.Json)
         {
         }
     }
