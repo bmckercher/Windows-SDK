@@ -1,5 +1,6 @@
 ﻿using MASFoundation.Internal.Data;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Security.Cryptography.Certificates;
 using Windows.Security.ExchangeActiveSyncProvisioning;
@@ -57,6 +58,9 @@ namespace MASFoundation.Internal
 
         public async Task InitializeAsync()
         {
+            var serverCert = _config.Server.ServerCerts[0];
+            await CertManager.InstallTrustedServerCert(serverCert);           
+
             var clientId = await SecureStorage.GetTextAsync("clientId");
             var clientSecret = await SecureStorage.GetTextAsync("clientSecret");
             var expirationDate = await SecureStorage.GetDateAsync("clientExpiration");
@@ -138,11 +142,11 @@ namespace MASFoundation.Internal
         {
             MagId = data.DeviceIdentifier;
 
-            await CertManager.InstallAsync(data.Certificate, username);
+            await CertManager.InstallAsync(data.Certificate);
 
             Certificate = await CertManager.GetAsync();
 
-            RegisteredUsername = username;
+            RegisteredUsername = Certificate.Subject;
             await SecureStorage.SetAsync("magDeviceId", true, MagId);
         }
 

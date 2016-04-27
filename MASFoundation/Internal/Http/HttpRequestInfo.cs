@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Windows.Security.Cryptography.Certificates;
-using Windows.Web.Http;
+
 
 namespace MASFoundation.Internal.Http
 {

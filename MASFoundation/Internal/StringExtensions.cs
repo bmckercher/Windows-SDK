@@ -15,5 +15,10 @@ namespace MASFoundation.Internal
             var converted = Convert.FromBase64String(text);
             return Encoding.UTF8.GetString(converted);
         }
+
+        public static byte[] ToUTF8Bytes(this string text)
+        {
+            return Encoding.UTF8.GetBytes(text);
+        }
     }
 }

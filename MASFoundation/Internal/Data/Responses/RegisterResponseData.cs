@@ -8,7 +8,16 @@ namespace MASFoundation.Internal.Data
             base(response, ResponseType.PlainText)
         {
             Certificate = response.Text;
-            DeviceIdentifier = response.Headers["device-identifier"];
+
+            string deviceId;
+            if (response.Headers.TryGetValue("device-identifier", out deviceId))
+            {
+                DeviceIdentifier = deviceId;
+            }
+            else if (response.Headers.TryGetValue("mag-identifier", out deviceId))
+            {
+                DeviceIdentifier = deviceId;
+            }
         }
 
         public string Certificate { get; private set; }

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Windows.Web.Http;
+
 
 namespace MASFoundation
 {
@@ -137,7 +137,7 @@ namespace MASFoundation
             return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = builder.ToString(),
-                Method = HttpMethod.Delete,
+                Method = HttpMethod.DELETE,
                 Headers = headers,
                 Certificate = Session.Instance.Device.Certificate
             }));
@@ -176,7 +176,7 @@ namespace MASFoundation
             return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = builder.ToString(),
-                Method = HttpMethod.Get,
+                Method = HttpMethod.GET,
                 Headers = headers,
                 Certificate = Session.Instance.Device.Certificate
             }));
@@ -207,7 +207,7 @@ namespace MASFoundation
             return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = endPointPath,
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Headers = headers,
                 Certificate = Session.Instance.Device.Certificate,
                 Body = body ?? string.Empty
@@ -235,58 +235,6 @@ namespace MASFoundation
         }
 
         /// <summary>
-        /// This method makes HTTP PATCH calls to an endpoint.
-        /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="body"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
-        /// <returns></returns>
-        public static async Task<TextResponse> PatchToAsync(string endPointPath,
-            string body,
-            IDictionary<string, string> headerInfo,
-            RequestType requestType,
-            ResponseType responseType)
-        {
-            if (!Session.Instance.IsRegistered)
-            {
-                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
-            }
-
-            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
-
-            return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
-            {
-                Url = endPointPath,
-                Method = HttpMethod.Patch,
-                Headers = headers,
-                Certificate = Session.Instance.Device.Certificate,
-                Body = body ?? string.Empty
-            }));
-        }
-
-        /// <summary>
-        /// This method makes HTTP PATCH calls to an endpoint.
-        /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="parameterInfo"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
-        /// <returns></returns>
-        public static Task<TextResponse> PatchToAsync(string endPointPath,
-            IDictionary<string, string> parameterInfo,
-            IDictionary<string, string> headerInfo,
-            RequestType requestType,
-            ResponseType responseType)
-        {
-            var body = FormatBody(requestType, parameterInfo);
-
-            return PatchToAsync(endPointPath, body, headerInfo, requestType, responseType);
-        }
-
-        /// <summary>
         /// This method makes HTTP PUT calls to an endpoint.
         /// </summary>
         /// <param name="endPointPath"></param>
@@ -311,7 +259,7 @@ namespace MASFoundation
             return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = endPointPath,
-                Method = HttpMethod.Put,
+                Method = HttpMethod.PUT,
                 Headers = headers,
                 Certificate = Session.Instance.Device.Certificate,
                 Body = body

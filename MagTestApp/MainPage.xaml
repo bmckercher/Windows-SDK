@@ -10,11 +10,24 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <Grid.RowDefinitions>
+            <RowDefinition Height="16"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="16"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="16"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <GridView Margin="8">
+
+        <Grid Grid.Row="1" Margin="8, 0, 8, 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <RadioButton x:Name="BritishGasTestConfigBtn" IsChecked="True" Content="British Gas Config"/>
+            <RadioButton x:Name="CATestConfigBtn" Grid.Column="1" Content="CA Config"/>
+        </Grid>
+        
+        <GridView Margin="8" Grid.Row="3">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsWrapGrid Orientation="Horizontal" />
@@ -28,9 +41,11 @@
             <Button x:Name="ResetBtn" Click="ResetBtn_Click" Width="100" Height="100" Content="Reset"/>
         </GridView>
 
-        <ProgressBar x:Name="BusyStatus" Grid.Row="1" Background="Transparent" Visibility="Collapsed" IsIndeterminate="True" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
+        <ProgressBar x:Name="BusyStatus" Grid.Row="4" Background="Transparent" Visibility="Collapsed" IsIndeterminate="True" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
 
-        <TextBox IsReadOnly="True" Grid.Row="2" x:Name="DebugInfo" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+        <Button x:Name="ClearLogBtn" Grid.Row="3" Content="Clear Log" Grid.RowSpan="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="ClearLogBtn_Click" Margin="0,0,8,0" />
+
+        <TextBox IsReadOnly="True" Grid.Row="5" x:Name="DebugInfo" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Visible" />
 
     </Grid>
 </Page>

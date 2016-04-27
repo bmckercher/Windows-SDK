@@ -15,8 +15,8 @@ namespace MASFoundation.Internal.Http
                 _response = response;
                 _responseJson = JsonObject.Parse(response.Text);
 
-                error = _responseJson.GetNamedString("error", null);
-                errorDescription = _responseJson.GetNamedString("error_description", null);
+                error = _responseJson.GetStringOrNull("error");
+                errorDescription = _responseJson.GetStringOrNull("error_description");
             }
             catch
             {

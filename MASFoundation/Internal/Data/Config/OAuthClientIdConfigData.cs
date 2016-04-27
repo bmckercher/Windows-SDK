@@ -29,7 +29,7 @@ namespace MASFoundation.Internal.Data
             get
             {
                 var clientUsernamePass = string.Format("{0}:{1}", Id, Secret);
-                return "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(clientUsernamePass));
+                return "Basic " + clientUsernamePass.ToBase64();
             }
         }
     }

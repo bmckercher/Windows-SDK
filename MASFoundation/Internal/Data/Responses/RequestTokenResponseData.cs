@@ -10,17 +10,11 @@ namespace MASFoundation.Internal.Data
             AccessToken = _responseJson.GetNamedString("access_token");
             TokenType = _responseJson.GetNamedString("token_type");
             ExpiresIn = (int)_responseJson.GetNamedNumber("expires_in");
-            RefreshToken = _responseJson.GetNamedString("refresh_token");
+            RefreshToken = _responseJson.GetStringOrNull("refresh_token");
             Scope = _responseJson.GetNamedString("scope");
 
-            try
-            {
-                IdToken = _responseJson.GetNamedString("id_token");
-                IdTokenType = _responseJson.GetNamedString("id_token_type");
-            }
-            catch
-            {
-            }
+            IdToken = _responseJson.GetStringOrNull("id_token");
+            IdTokenType = _responseJson.GetStringOrNull("id_token_type");
         }
 
         public string AccessToken { get; private set; }

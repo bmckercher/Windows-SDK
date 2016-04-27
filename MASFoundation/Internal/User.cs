@@ -92,6 +92,8 @@ namespace MASFoundation.Internal
 
         public async Task LoginAsync()
         {
+            var data = await MAGRequests.RequestAccessTokenAnonymouslyAsync(_config, _device);
+            await UpdateTokens(data);
         }
 
         async Task UpdateTokens(RequestTokenResponseData data)
@@ -101,8 +103,12 @@ namespace MASFoundation.Internal
             _expireTimeUtc = DateTime.UtcNow.AddSeconds(data.ExpiresIn);
 
             await SecureStorage.SetAsync("accessToken", false, _accessToken);
-            await SecureStorage.SetAsync("refreshToken", false, _refreshToken);
             await SecureStorage.SetAsync("expireTime", false, _expireTimeUtc);
+
+            if (_refreshToken != null)
+            {
+                await SecureStorage.SetAsync("refreshToken", false, _refreshToken);
+            }
 
             if (data.IdToken != null && data.IdTokenType != null)
             {

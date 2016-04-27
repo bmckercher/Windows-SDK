@@ -1,8 +1,12 @@
 ﻿using MASFoundation.Internal.Data;
 using MASFoundation.Internal.Http;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
 using System.Threading.Tasks;
-using Windows.Web.Http;
+using Windows.Security.Cryptography.Certificates;
 
 namespace MASFoundation.Internal
 {
@@ -12,7 +16,7 @@ namespace MASFoundation.Internal
 
     internal static class MAGRequests
     {
-        public static Task<ClientCredentialsResponseData> GetClientCredentialsAsync(Configuration config, string deviceIdBase64)
+        public static async Task<ClientCredentialsResponseData> GetClientCredentialsAsync(Configuration config, string deviceIdBase64)
         {
             var url = config.GetEndpointPath(config.Mag.SystemEndpoints.ClientCredentialInit);
 
@@ -30,9 +34,9 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Json }
             };
 
-            return HttpRequester.RequestAsync<ClientCredentialsResponseData>(new HttpRequestInfo()
+            return await HttpRequester.RequestAsync<ClientCredentialsResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Url = url,
                 Headers = headers,
                 Body = builder.ToString()
@@ -59,7 +63,7 @@ namespace MASFoundation.Internal
 
             return await HttpRequester.RequestAsync<AuthorizationProvidersResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Get,
+                Method = HttpMethod.GET,
                 Url = urlBuilder.ToString(),
                 Headers = headers,
             });
@@ -81,7 +85,7 @@ namespace MASFoundation.Internal
 
             return await HttpRequester.RequestAsync<RegisterResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Url = url,
                 Headers = headers,
                 Body = csr
@@ -106,7 +110,7 @@ namespace MASFoundation.Internal
 
             return await HttpRequester.RequestAsync<RegisterResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Url = url,
                 Headers = headers,
                 Body = csr
@@ -119,7 +123,7 @@ namespace MASFoundation.Internal
 
             return HttpRequester.RequestAsync<UnregisterResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Delete,
+                Method = HttpMethod.DELETE,
                 Url = url,
                 Certificate = device.Certificate
             });
@@ -143,7 +147,7 @@ namespace MASFoundation.Internal
 
             var response = await HttpRequester.RequestTextAsync(new HttpRequestInfo()
             {
-                Method = HttpMethod.Delete,
+                Method = HttpMethod.DELETE,
                 Headers = headers,
                 Url = builder.ToString(),
             });
@@ -171,7 +175,7 @@ namespace MASFoundation.Internal
             
             return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Url = url,
                 Headers = headers,
                 Body = builder.ToString()
@@ -199,7 +203,7 @@ namespace MASFoundation.Internal
 
             return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Url = url,
                 Headers = headers,
                 Body = builder.ToString()
@@ -221,14 +225,14 @@ namespace MASFoundation.Internal
             var scope = config.DefaultClientId.Scope;
 
             var builder = new HttpUrlBuilder();
-            builder.Add("scope", scope);
-            builder.Add("client_id", device.ClientId);
-            builder.Add("client_secret", device.ClientSecret);
+            builder.Add("scope", "openid msso phone profile address email");
+            //builder.Add("client_id", device.ClientId);
+            //builder.Add("client_secret", device.ClientSecret);
             builder.Add("grant_type", "client_credentials");
 
             return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Url = url,
                 Headers = headers,
                 Body = builder.ToString()
@@ -255,7 +259,7 @@ namespace MASFoundation.Internal
 
             return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
-                Method = HttpMethod.Post,
+                Method = HttpMethod.POST,
                 Url = url,
                 Headers = headers,
                 Body = builder.ToString()
@@ -278,7 +282,7 @@ namespace MASFoundation.Internal
             return await HttpRequester.RequestAsync<UserInfoResponseData>(new HttpRequestInfo()
             {
                 Url = url,
-                Method = HttpMethod.Get,
+                Method = HttpMethod.GET,
                 Headers = headers
             });
         }

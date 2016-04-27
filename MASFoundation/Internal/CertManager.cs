@@ -10,9 +10,10 @@
 //using Org.BouncyCastle.X509;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Security.Cryptography.Certificates;
-//using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.InteropServices.WindowsRuntime;
 //using System.IO;
 
 namespace MASFoundation.Internal
@@ -30,11 +31,27 @@ namespace MASFoundation.Internal
                     IssuerName = "ca_msso",
                 });
 
-                var cert = certs.FirstOrDefault();
+                var cert = certs.FirstOrDefault(c => c.Subject == certUsername);
                 return cert;
             }
 
             return null;
+        }
+
+        public static async Task InstallTrustedServerCert(string certText)
+        {
+            var cert = new Certificate(certText.ToUTF8Bytes().AsBuffer());
+
+            var trustedStore = CertificateStores.TrustedRootCertificationAuthorities;
+            trustedStore.Add(cert);
+
+
+            var foundCerts = await CertificateStores.FindAllAsync(new CertificateQuery()
+            {
+                IssuerName = "masdemo.dev.ca.com"
+            });
+
+            var foundCert = foundCerts.FirstOrDefault();
         }
 
         public static async Task<string> GenerateCSRAsync(Configuration config, Device device, string username)
@@ -65,7 +82,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task InstallAsync(string certResponse, string username)
+        public static async Task InstallAsync(string certResponse)
         {
             #region Bouncy castle PKCS #12 cert file generation
             //var data = Convert.FromBase64String(certResponse);
@@ -89,9 +106,12 @@ namespace MASFoundation.Internal
             //}
             #endregion
 
+
+            var cert = new Certificate(Convert.FromBase64String(certResponse).AsBuffer());
+
             await CertificateEnrollmentManager.InstallCertificateAsync(certResponse, InstallOptions.DeleteExpired);
 
-            await SecureStorage.SetAsync("registeredCertSubject", false, username);
+            await SecureStorage.SetAsync("registeredCertSubject", false, cert.Subject);
         }
 
         public static async Task UninstallAsync()

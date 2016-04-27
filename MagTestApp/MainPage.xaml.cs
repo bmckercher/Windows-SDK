@@ -3,6 +3,7 @@ using MASFoundation;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
+using System.Threading.Tasks;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -16,17 +17,23 @@ namespace MagTestApp
         public MainPage()
         {
             this.InitializeComponent();
+
+            MAS.Logger = this;
+            MAS.LogLevel = LogLevel.Full;
+            MAS.LoginRequested += MAS_LoginRequested;
+
+            // British Gas test configuration only supports user device registration
+            MAS.ConfigFileName = "msso_config.json";
+            MAS.RegistrationKind = RegistrationKind.User;
+            BritishGasTestConfigBtn.IsChecked = true;
+
+            BritishGasTestConfigBtn.Checked += BritishGasTestConfigBtn_Checked;
+            CATestConfigBtn.Checked += CATestConfigBtn_Checked;
         }
 
         private async void StartBtn_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             IsBusy = true;
-
-            MAS.LoginRequested -= MAS_LoginRequested;
-            MAS.RegistrationKind = RegistrationKind.User;
-            MAS.Logger = this;
-            MAS.LogLevel = LogLevel.Full;
-            MAS.LoginRequested += MAS_LoginRequested;
 
             try
             {
@@ -175,6 +182,40 @@ namespace MagTestApp
             }
 
             return null;
+        }
+
+        private async void BritishGasTestConfigBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            await TryReset();
+
+            // British Gas test configuration only supports user device registration
+            MAS.RegistrationKind = RegistrationKind.User;
+            MAS.ConfigFileName = "msso_config.json";
+        }
+
+        private async void CATestConfigBtn_Checked(object sender, RoutedEventArgs e)
+        {
+            await TryReset();
+
+            // CA test configuration supports client device registration
+            MAS.RegistrationKind = RegistrationKind.Client;
+            MAS.ConfigFileName = "msso_config_with_client_reg.json";
+        }
+
+        async Task TryReset()
+        {
+            try
+            {
+                await MAS.ResetAsync();
+            }
+            catch
+            {
+            }
+        }
+
+        private void ClearLogBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DebugInfo.Text = "";
         }
     }
 }
