@@ -134,7 +134,7 @@ namespace MASFoundation
 
             var headers = await SetupRequestHeaders(headerInfo, RequestType.None, responseType);
 
-            return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
+            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = builder.ToString(),
                 Method = HttpMethod.DELETE,
@@ -173,7 +173,7 @@ namespace MASFoundation
 
             var headers = await SetupRequestHeaders(headerInfo, RequestType.None, responseType);
 
-            return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
+            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = builder.ToString(),
                 Method = HttpMethod.GET,
@@ -204,7 +204,7 @@ namespace MASFoundation
 
             var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
 
-            return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
+            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = endPointPath,
                 Method = HttpMethod.POST,
@@ -256,7 +256,7 @@ namespace MASFoundation
 
             var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
 
-            return ToMASResponse(await HttpRequester.RequestTextAsync(new HttpRequestInfo()
+            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = endPointPath,
                 Method = HttpMethod.PUT,

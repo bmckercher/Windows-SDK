@@ -34,7 +34,7 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Json }
             };
 
-            return await HttpRequester.RequestAsync<ClientCredentialsResponseData>(new HttpRequestInfo()
+            return await HttpRequestFactory.RequestAsync<ClientCredentialsResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.POST,
                 Url = url,
@@ -61,7 +61,7 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Json }
             };
 
-            return await HttpRequester.RequestAsync<AuthorizationProvidersResponseData>(new HttpRequestInfo()
+            return await HttpRequestFactory.RequestAsync<AuthorizationProvidersResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.GET,
                 Url = urlBuilder.ToString(),
@@ -83,7 +83,7 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Plain }
             };
 
-            return await HttpRequester.RequestAsync<RegisterResponseData>(new HttpRequestInfo()
+            return await HttpRequestFactory.RequestAsync<RegisterResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.POST,
                 Url = url,
@@ -108,7 +108,7 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Plain }
             };
 
-            return await HttpRequester.RequestAsync<RegisterResponseData>(new HttpRequestInfo()
+            return await HttpRequestFactory.RequestAsync<RegisterResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.POST,
                 Url = url,
@@ -121,7 +121,7 @@ namespace MASFoundation.Internal
         {
             var url = config.GetEndpointPath(config.Mag.SystemEndpoints.DeviceRemove);
 
-            return HttpRequester.RequestAsync<UnregisterResponseData>(new HttpRequestInfo()
+            return HttpRequestFactory.RequestAsync<UnregisterResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.DELETE,
                 Url = url,
@@ -145,7 +145,7 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Json }
             };
 
-            var response = await HttpRequester.RequestTextAsync(new HttpRequestInfo()
+            var response = await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
             {
                 Method = HttpMethod.DELETE,
                 Headers = headers,
@@ -173,7 +173,7 @@ namespace MASFoundation.Internal
             builder.Add("password", password);
             builder.Add("grant_type", "password");
             
-            return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
+            return HttpRequestFactory.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.POST,
                 Url = url,
@@ -201,7 +201,7 @@ namespace MASFoundation.Internal
             builder.Add("grant_type", idTokenType);
             builder.Add("assertion", idToken);
 
-            return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
+            return HttpRequestFactory.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.POST,
                 Url = url,
@@ -230,7 +230,7 @@ namespace MASFoundation.Internal
             //builder.Add("client_secret", device.ClientSecret);
             builder.Add("grant_type", "client_credentials");
 
-            return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
+            return HttpRequestFactory.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.POST,
                 Url = url,
@@ -257,7 +257,7 @@ namespace MASFoundation.Internal
             builder.Add("refresh_token", refreshToken);
             builder.Add("grant_type", "refresh_token");
 
-            return HttpRequester.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
+            return HttpRequestFactory.RequestAsync<RequestTokenResponseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.POST,
                 Url = url,
@@ -279,7 +279,7 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Json }
             };
 
-            return await HttpRequester.RequestAsync<UserInfoResponseData>(new HttpRequestInfo()
+            return await HttpRequestFactory.RequestAsync<UserInfoResponseData>(new HttpRequestInfo()
             {
                 Url = url,
                 Method = HttpMethod.GET,

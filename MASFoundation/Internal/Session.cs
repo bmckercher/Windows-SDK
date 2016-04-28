@@ -89,7 +89,7 @@ namespace MASFoundation.Internal
         {
             Log.Info("Framework stopping...");
 
-            HttpRequester.CancelAll();
+            HttpRequestFactory.CancelAll();
 
             Log.Info("Framework stopped");
         }
@@ -102,7 +102,7 @@ namespace MASFoundation.Internal
 
             await CertManager.UninstallAsync();
 
-            HttpRequester.CancelAll();
+            HttpRequestFactory.CancelAll();
 
             Log.Info("Framework reset");
         }

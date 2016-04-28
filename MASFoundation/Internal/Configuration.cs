@@ -38,6 +38,8 @@ namespace MASFoundation.Internal
                 ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedJsonSerialization, e);
             }
 
+            Validate(jsonObject);
+
             try
             {
                 Server = new ServerConfigData(jsonObject.GetNamedObject("server"));
@@ -105,6 +107,65 @@ namespace MASFoundation.Internal
         {
             get;
             internal set;
+        }
+
+        void Validate(JsonObject jsonObject)
+        {
+            var validator = new JsonValidator();
+
+            //  Server config
+            validator.AddRule(new JsonValidationRule("server.hostname", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("server.port", JsonValueType.Number));
+            validator.AddRule(new JsonValidationRule("server.server_certs", JsonValueType.Array));
+
+            //  OAuth config
+            validator.AddRule(new JsonValidationRule("oauth.client.organization", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("oauth.client.client_ids[0].client_id", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("oauth.client.client_ids[0].scope", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("oauth.client.client_ids[0].redirect_uri", JsonValueType.String));
+
+            //  OAuth system endpoint
+            validator.AddRule(new JsonValidationRule("oauth.system_endpoints.authorization_endpoint_path", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("oauth.system_endpoints.token_endpoint_path", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("oauth.system_endpoints.token_endpoint_path", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("oauth.system_endpoints.usersession_logout_endpoint_path", JsonValueType.String));
+
+            //  MAG system endpoint
+            validator.AddRule(new JsonValidationRule("mag.system_endpoints.device_remove_endpoint_path", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("mag.system_endpoints.device_register_endpoint_path", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("mag.system_endpoints.device_client_register_endpoint_path", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("mag.system_endpoints.client_credential_init_endpoint_path", JsonValueType.String));
+
+            //  MAG OAuth protected endpoint
+            validator.AddRule(new JsonValidationRule("mag.oauth_protected_endpoints.enterprise_browser_endpoint_path", JsonValueType.String));
+
+            //  MAG mobile SDK
+            validator.AddRule(new JsonValidationRule("mag.mobile_sdk.sso_enabled", JsonValueType.Boolean));
+            validator.AddRule(new JsonValidationRule("mag.mobile_sdk.location_enabled", JsonValueType.Boolean));
+            validator.AddRule(new JsonValidationRule("mag.mobile_sdk.location_provider", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("mag.mobile_sdk.msisdn_enabled", JsonValueType.Boolean));
+            validator.AddRule(new JsonValidationRule("mag.mobile_sdk.trusted_public_pki", JsonValueType.Boolean));
+            validator.AddRule(new JsonValidationRule("mag.mobile_sdk.trusted_cert_pinned_public_key_hashes", JsonValueType.Array));
+            validator.AddRule(new JsonValidationRule("mag.mobile_sdk.client_cert_rsa_keybits", JsonValueType.Number));
+
+            //  MAG BLE
+            validator.AddRule(new JsonValidationRule("mag.ble.msso_ble_service_uuid", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("mag.ble.msso_ble_characteristic_uuid", JsonValueType.String));
+            validator.AddRule(new JsonValidationRule("mag.ble.msso_ble_rssi", JsonValueType.Number));
+
+            var results = validator.Validate(jsonObject);
+
+            if (results.HasErrors)
+            {
+                var configException = new MAGConfigException();
+
+                foreach (var error in results.Errors)
+                {
+                    configException.Errors.Add(error.ToString());
+                }
+
+                ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedJsonValidation, configException);
+            }
         }
     }
 }

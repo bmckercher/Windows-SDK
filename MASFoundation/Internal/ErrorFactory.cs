@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace MASFoundation.Internal
 {
@@ -6,10 +7,10 @@ namespace MASFoundation.Internal
     {
         public static void ThrowError(ErrorCode error, Exception innerException = null)
         {
-            throw new MASException(error, GetErrorText(error), innerException);
+            throw new MASException(error, GetErrorText(error, innerException), innerException);
         }
 
-        static string GetErrorText(ErrorCode error)
+        static string GetErrorText(ErrorCode error, Exception innerException)
         {
             switch (error)
             {
@@ -25,9 +26,17 @@ namespace MASFoundation.Internal
                 //
                 // Configuration
                 //
-                case ErrorCode.ConfigurationLoadingFailedFileNotFound: return @"The configuration file %@ could not be found";
-                case ErrorCode.ConfigurationLoadingFailedJsonSerialization: return @"The configuration file %@ was found but the contents could not be loaded with description\n\n\'%@\'";
-                case ErrorCode.ConfigurationLoadingFailedJsonValidation: return @"The configuration was successfully loaded, but the configuration is invalid for the following reason\n\n'%@'";
+                case ErrorCode.ConfigurationLoadingFailedFileNotFound: return @"The configuration file could not be found";
+                case ErrorCode.ConfigurationLoadingFailedJsonSerialization: return @"The configuration file was found but the contents could not be loaded with description\n\n\'%@\'";
+                case ErrorCode.ConfigurationLoadingFailedJsonValidation:
+                    {
+                        StringBuilder sb = new StringBuilder("The configuration was successfully loaded, but the configuration is invalid for the following reason");
+                        sb.AppendLine();
+                        var configException = innerException as MAGConfigException;
+                        configException?.Errors.ForEach(e => sb.AppendLine(e));
+
+                        return sb.ToString();
+                    }
                 case ErrorCode.ConfigurationInvalidEndpoint: return @"Invalid endpoint";
 
                 //

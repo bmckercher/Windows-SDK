@@ -14,25 +14,21 @@ namespace MASFoundation.Internal
 
         public async Task InitializeAsync()
         {
-            var accessToken = await SecureStorage.GetTextAsync("accessToken");
-            var refreshToken = await SecureStorage.GetTextAsync("refreshToken");
+            _accessToken = await SecureStorage.GetTextAsync("accessToken");
+            _refreshToken = await SecureStorage.GetTextAsync("refreshToken");
+
             var expireTime = await SecureStorage.GetDateAsync("expireTime");
-
-            var idToken = await SecureStorage.GetTextAsync("idToken");
-            var idTokenType = await SecureStorage.GetTextAsync("idTokenType");
-
-            if (accessToken != null && refreshToken != null && expireTime != null)
+            if (expireTime != null)
             {
-                _accessToken = accessToken;
-                _refreshToken = refreshToken;
                 _expireTimeUtc = expireTime.Value;
             }
-
-            if (idToken != null && idTokenType != null)
+            else
             {
-                _idToken = idToken;
-                _idTokenType = idTokenType;
+                _expireTimeUtc = DateTime.MinValue;
             }
+
+            _idToken = await SecureStorage.GetTextAsync("idToken");
+            _idTokenType = await SecureStorage.GetTextAsync("idTokenType");
 
             // We have an id token but not an access token, try to get an access token.
             if (_idToken != null && _idTokenType != null && _accessToken == null)

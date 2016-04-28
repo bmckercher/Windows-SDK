@@ -110,6 +110,11 @@
     <Compile Include="ILogger.cs" />
     <Compile Include="Internal\CertManager.cs" />
     <Compile Include="Internal\Configuration.cs" />
+    <Compile Include="Internal\Data\JsonValidator\JsonValidationError.cs" />
+    <Compile Include="Internal\Data\JsonValidator\JsonValidationErrorKind.cs" />
+    <Compile Include="Internal\Data\JsonValidator\JsonValidationResult.cs" />
+    <Compile Include="Internal\Data\JsonValidator\JsonValidationRule.cs" />
+    <Compile Include="Internal\Data\JsonValidator\JsonValidator.cs" />
     <Compile Include="Internal\Data\Responses\AuthorizationProvidersResponseData.cs" />
     <Compile Include="Internal\Data\Responses\ClientCredentialsResponseData.cs" />
     <Compile Include="Internal\Data\Config\CustomConfigData.cs" />
@@ -147,11 +152,12 @@
     <Compile Include="Internal\Logger.cs" />
     <Compile Include="Internal\MAGRequests.cs" />
     <Compile Include="LogLevel.cs" />
+    <Compile Include="MAGConfigException.cs" />
     <Compile Include="RegistrationKind.cs" />
     <Compile Include="Internal\ScopeNames.cs" />
     <Compile Include="Internal\Session.cs" />
     <Compile Include="Internal\SecureStorage.cs" />
-    <Compile Include="Internal\Http\HttpRequester.cs" />
+    <Compile Include="Internal\HttpRequestFactory.cs" />
     <Compile Include="Internal\StringExtensions.cs" />
     <Compile Include="Internal\User.cs" />
     <Compile Include="MAS.cs" />
