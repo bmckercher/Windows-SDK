@@ -56,11 +56,11 @@ namespace MASFoundation.Internal.Http
 
             if (!response.IsSuccessful)
             {
-                Session.Instance.Log.Error(sb.ToString());
+                Logger.LogError(sb.ToString());
             }
             else
             {
-                Session.Instance.Log.Info(sb.ToString());
+                Logger.LogInfo(sb.ToString());
             }
         }
     }

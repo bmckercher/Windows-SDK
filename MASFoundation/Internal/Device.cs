@@ -9,9 +9,11 @@ namespace MASFoundation.Internal
 {
     internal class Device
     {
-        public Device(Configuration config)
+        public Device(Configuration config, SecureStorage storage)
         {
             _config = config;
+            _storage = storage;
+            _certManager = new CertManager(storage);
         }
 
         public string Id
@@ -59,11 +61,11 @@ namespace MASFoundation.Internal
         public async Task InitializeAsync()
         {
             var serverCert = _config.Server.ServerCerts[0];
-            await CertManager.InstallTrustedServerCert(serverCert);           
+            await _certManager.InstallTrustedServerCert(serverCert);           
 
-            var clientId = await SecureStorage.GetTextAsync("clientId");
-            var clientSecret = await SecureStorage.GetTextAsync("clientSecret");
-            var expirationDate = await SecureStorage.GetDateAsync("clientExpiration");
+            var clientId = await _storage.GetTextAsync("clientId");
+            var clientSecret = await _storage.GetTextAsync("clientSecret");
+            var expirationDate = await _storage.GetDateAsync("clientExpiration");
 
             if (clientId == null || clientSecret == null || expirationDate == null || DateTime.UtcNow >= expirationDate.Value)
             {
@@ -80,9 +82,9 @@ namespace MASFoundation.Internal
                     _clientExpiration = clientCredResponse.Expiration.FromUnixTime();
                 }
 
-                await SecureStorage.SetAsync("clientId", false, _clientId);
-                await SecureStorage.SetAsync("clientSecret", false, _clientSecret);
-                await SecureStorage.SetAsync("clientExpiration", false, _clientExpiration);
+                await _storage.SetAsync("clientId", false, _clientId);
+                await _storage.SetAsync("clientSecret", false, _clientSecret);
+                await _storage.SetAsync("clientExpiration", false, _clientExpiration);
             }
             else
             {
@@ -92,10 +94,10 @@ namespace MASFoundation.Internal
             }
 
             // Check if we have magId
-            MagId = await SecureStorage.GetTextAsync("magDeviceId");
+            MagId = await _storage.GetTextAsync("magDeviceId");
 
             // check if we have a certificate
-            Certificate = await CertManager.GetAsync();
+            Certificate = await _certManager.GetAsync();
 
             if (Certificate == null || DateTime.Now > Certificate.ValidTo)
             {
@@ -110,7 +112,7 @@ namespace MASFoundation.Internal
         public async Task RegisterWithClientAsync()
         {
             var username = "clientName";
-            var csr = await CertManager.GenerateCSRAsync(_config, this, username);
+            var csr = await _certManager.GenerateCSRAsync(_config, this, username);
 
             var response = await MAGRequests.RegisterDeviceAsync(_config, this, csr);
 
@@ -119,7 +121,7 @@ namespace MASFoundation.Internal
 
         public async Task RegisterWithUserAsync(string username, string password)
         {
-            var csr = await CertManager.GenerateCSRAsync(_config, this, username);
+            var csr = await _certManager.GenerateCSRAsync(_config, this, username);
 
             var response = await MAGRequests.RegisterDeviceForUserAsync(_config, this, username, password, csr);
 
@@ -142,18 +144,20 @@ namespace MASFoundation.Internal
         {
             MagId = data.DeviceIdentifier;
 
-            await CertManager.InstallAsync(data.Certificate);
+            await _certManager.InstallAsync(data.Certificate);
 
-            Certificate = await CertManager.GetAsync();
+            Certificate = await _certManager.GetAsync();
 
             RegisteredUsername = Certificate.Subject;
-            await SecureStorage.SetAsync("magDeviceId", true, MagId);
+            await _storage.SetAsync("magDeviceId", true, MagId);
         }
 
         string _clientId;
         string _clientSecret;
         DateTime _clientExpiration = DateTime.MinValue;
         Configuration _config;
+        SecureStorage _storage;
+        CertManager _certManager;
         EasClientDeviceInformation _deviceInfo = new EasClientDeviceInformation();
     }
 }

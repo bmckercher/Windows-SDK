@@ -9,15 +9,24 @@ using namespace concurrency;
 using namespace Microsoft::WRL;
 using namespace Windows::Storage;
 
-IAsyncOperation<IBuffer^>^ Encryptor::EncryptAsync(IBuffer^ data)
+IAsyncOperation<IBuffer^>^ Encryptor::EncryptAsync(IBuffer^ data, String^ entropy)
 {
-	return create_async([this, data]() -> IBuffer^
+	return create_async([this, data, entropy]() -> IBuffer^
 	{
 		DATA_BLOB dataIn, dataOut;
 		dataIn.pbData = GetDataFromIBuffer(data);
 		dataIn.cbData = data->Length;
 
-		if (!::CryptProtectData(&dataIn, L"", NULL, NULL, NULL, 0, &dataOut))
+		DATA_BLOB* pEntropyData = NULL;
+		DATA_BLOB entropyData;
+		if (entropy != nullptr)
+		{
+			entropyData.pbData = (BYTE*)entropy->Data();
+			entropyData.cbData = entropy->Length() * sizeof(wchar_t);
+			pEntropyData = &entropyData;
+		}
+
+		if (!::CryptProtectData(&dataIn, L"", pEntropyData, NULL, NULL, 0, &dataOut))
 		{
 			return nullptr;
 		}
@@ -32,16 +41,25 @@ IAsyncOperation<IBuffer^>^ Encryptor::EncryptAsync(IBuffer^ data)
 	});
 }
 
-IAsyncOperation<IBuffer^>^ Encryptor::DecryptAsync(IBuffer^ data)
+IAsyncOperation<IBuffer^>^ Encryptor::DecryptAsync(IBuffer^ data, String^ entropy)
 {
-	return create_async([this, data]() -> IBuffer^
+	return create_async([this, data, entropy]() -> IBuffer^
 	{
 		DATA_BLOB dataIn, dataOut;
 		dataIn.pbData = GetDataFromIBuffer(data);
 		dataIn.cbData = data->Length;
 		LPWSTR description = NULL;
 
-		if (!::CryptUnprotectData(&dataIn, &description, NULL, NULL, NULL, 0, &dataOut))
+		DATA_BLOB* pEntropyData = NULL;
+		DATA_BLOB entropyData;
+		if (entropy != nullptr)
+		{
+			entropyData.pbData = (BYTE*)entropy->Data();
+			entropyData.cbData = entropy->Length() * sizeof(wchar_t);
+			pEntropyData = &entropyData;
+		}
+
+		if (!::CryptUnprotectData(&dataIn, &description, pEntropyData, NULL, NULL, 0, &dataOut))
 		{
 			return nullptr;
 		}

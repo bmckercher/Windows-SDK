@@ -2,9 +2,9 @@
 
 namespace MASFoundation.Internal
 {
-    internal class Logger : ILogger
+    internal static class Logger
     {
-        public void Info(string message)
+        static internal void LogInfo(string message)
         {
             if (MAS.LogLevel == LogLevel.Full)
             {
@@ -19,7 +19,7 @@ namespace MASFoundation.Internal
             }
         }
 
-        public void Warn(string message)
+        static internal void LogWarning(string message)
         {
             if (MAS.LogLevel == LogLevel.Full || MAS.LogLevel == LogLevel.ErrorOnly)
             {
@@ -34,7 +34,7 @@ namespace MASFoundation.Internal
             }
         }
 
-        public void Error(string message)
+        static internal void LogError(string message)
         {
             if (MAS.LogLevel == LogLevel.Full || MAS.LogLevel == LogLevel.ErrorOnly)
             {

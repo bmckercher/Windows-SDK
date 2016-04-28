@@ -1,4 +1,6 @@
-﻿//using Org.BouncyCastle.Asn1;
+﻿
+#region Bouncy castle usings
+//using Org.BouncyCastle.Asn1;
 //using Org.BouncyCastle.Asn1.X509;
 //using Org.BouncyCastle.Crypto;
 //using Org.BouncyCastle.Crypto.Generators;
@@ -8,9 +10,10 @@
 //using Org.BouncyCastle.Security;
 //using Org.BouncyCastle.Utilities;
 //using Org.BouncyCastle.X509;
+#endregion
+
 using System;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Windows.Security.Cryptography.Certificates;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -20,9 +23,14 @@ namespace MASFoundation.Internal
 {
     internal class CertManager
     {
-        public static async Task<Certificate> GetAsync()
+        public CertManager(SecureStorage storage)
         {
-            var certUsername = await SecureStorage.GetTextAsync("registeredCertSubject");
+            _storage = storage;
+        }
+
+        public async Task<Certificate> GetAsync()
+        {
+            var certUsername = await _storage.GetTextAsync("registeredCertSubject");
 
             if (certUsername != null)
             {
@@ -38,23 +46,17 @@ namespace MASFoundation.Internal
             return null;
         }
 
-        public static async Task InstallTrustedServerCert(string certText)
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task InstallTrustedServerCert(string certText)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             var cert = new Certificate(certText.ToUTF8Bytes().AsBuffer());
 
             var trustedStore = CertificateStores.TrustedRootCertificationAuthorities;
             trustedStore.Add(cert);
-
-
-            var foundCerts = await CertificateStores.FindAllAsync(new CertificateQuery()
-            {
-                IssuerName = "masdemo.dev.ca.com"
-            });
-
-            var foundCert = foundCerts.FirstOrDefault();
         }
 
-        public static async Task<string> GenerateCSRAsync(Configuration config, Device device, string username)
+        public async Task<string> GenerateCSRAsync(Configuration config, Device device, string username)
         {
             #region Bouncy castle CSR generation
             //X509Name subject = new X509Name(string.Format("cn={0}, ou={1}, dc={2}, o={3}", username, device.Id, device.Name, config.OAuth.Client.Organization));
@@ -82,7 +84,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task InstallAsync(string certResponse)
+        public async Task InstallAsync(string certResponse)
         {
             #region Bouncy castle PKCS #12 cert file generation
             //var data = Convert.FromBase64String(certResponse);
@@ -106,12 +108,11 @@ namespace MASFoundation.Internal
             //}
             #endregion
 
-
             var cert = new Certificate(Convert.FromBase64String(certResponse).AsBuffer());
 
             await CertificateEnrollmentManager.InstallCertificateAsync(certResponse, InstallOptions.DeleteExpired);
 
-            await SecureStorage.SetAsync("registeredCertSubject", false, cert.Subject);
+            await _storage.SetAsync("registeredCertSubject", false, cert.Subject);
         }
 
         public static async Task UninstallAsync()
@@ -125,5 +126,7 @@ namespace MASFoundation.Internal
         //static readonly SecureRandom _random = new SecureRandom();
         //static AsymmetricKeyParameter _privateKey;
         #endregion
+
+        SecureStorage _storage;
     }
 }

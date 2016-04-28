@@ -1,43 +1,46 @@
 ﻿using MASFoundation.Internal.Http;
 using System;
 using System.Threading.Tasks;
+using Windows.Security.Cryptography.Certificates;
 
 namespace MASFoundation.Internal
 {
     internal class Session
     {
-        public Session()
-        {
-            Log = new Logger();
-        }
-
-        static Session _instance;
-        public static Session Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new Session();
-                }
-
-                return _instance;
-            }
-        }
-
         public bool IsRegistered
         {
             get
             {
-                return User != null && Device != null && Device.IsRegistered;
+                return _user != null && _device != null && _device.IsRegistered;
             }
+        }
+
+        public string MagId
+        {
+            get
+            {
+                return _device?.MagId;
+            }
+        }
+
+        public Certificate Certificate
+        {
+            get
+            {
+                return _device?.Certificate;
+            }
+        }
+
+        public Task<string> GetAccessHeaderValueAsync()
+        {
+            return _user.GetAccessHeaderValueAsync();
         }
 
         public event EventHandler<EventArgs> LoginRequested;
 
         public async Task StartAsync(string fileName, RegistrationKind regKind)
         {
-            Log.Info("Framework starting...");
+            Logger.LogInfo("Framework starting...");
 
             _registrationKind = regKind;
 
@@ -45,18 +48,22 @@ namespace MASFoundation.Internal
             _config = new Configuration();
             await _config.LoadAsync(fileName);
 
+            _storage = new SecureStorage(_config);
+
+            _certManager = new CertManager(_storage);
+
             // Load device and any previous registration info.
-            Device = new Device(_config);
-            await Device.InitializeAsync();
+            _device = new Device(_config, _storage);
+            await _device.InitializeAsync();
 
             // Authorization providers not supported in yet
             //var response = await MAGRequests.GetAuthorizationProviders(_config, Device);
 
             // load user and any previous access token or idtoken info
-            User = new User(_config, Device);
-            await User.InitializeAsync();
+            _user = new User(_config, _device, _storage);
+            await _user.InitializeAsync();
 
-            if (!Device.IsRegistered)
+            if (!_device.IsRegistered)
             {
                 switch (_registrationKind)
                 {
@@ -67,8 +74,8 @@ namespace MASFoundation.Internal
                             ErrorFactory.ThrowError(ErrorCode.DeviceRegistrationAttemptedWithUnregisteredScope);
                         }
 
-                        await Device.RegisterWithClientAsync();
-                        await User.LoginAsync();
+                        await _device.RegisterWithClientAsync();
+                        await _user.LoginAsync();
 
                         break;
                     case RegistrationKind.User:
@@ -82,21 +89,23 @@ namespace MASFoundation.Internal
                 }
             }
 
-            Log.Info("Framework started");
+            Logger.LogInfo("Framework started");
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task StopAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            Log.Info("Framework stopping...");
+            Logger.LogInfo("Framework stopping...");
 
             HttpRequestFactory.CancelAll();
 
-            Log.Info("Framework stopped");
+            Logger.LogInfo("Framework stopped");
         }
 
         public async Task ResetAsync()
         {
-            Log.Info("Framework reseting...");
+            Logger.LogInfo("Framework reseting...");
 
             await SecureStorage.ResetAsync();
 
@@ -104,28 +113,28 @@ namespace MASFoundation.Internal
 
             HttpRequestFactory.CancelAll();
 
-            Log.Info("Framework reset");
+            Logger.LogInfo("Framework reset");
         }
 
         public async Task LoginUserAsync(string username, string password)
         {
-            Log.Info("Logging in user...");
+            Logger.LogInfo("Logging in user...");
 
-            if (!Device.IsRegistered && _registrationKind == RegistrationKind.User)
+            if (!_device.IsRegistered && _registrationKind == RegistrationKind.User)
             {
-                Log.Info("User device registration starting...");
-                await Device.RegisterWithUserAsync(username, password);
-                Log.Info("User device registration complete");
+                Logger.LogInfo("User device registration starting...");
+                await _device.RegisterWithUserAsync(username, password);
+                Logger.LogInfo("User device registration complete");
             }
 
-            await User.LoginAsync(username, password);
+            await _user.LoginAsync(username, password);
 
-            Log.Info("User logged in");
+            Logger.LogInfo("User logged in");
         }
 
         public async Task LogoffUserAsync()
         {
-            Log.Info("Logging out user...");
+            Logger.LogInfo("Logging out user...");
 
             if (!IsRegistered)
             {
@@ -133,14 +142,14 @@ namespace MASFoundation.Internal
                 return;
             }
 
-            await User.LogoffAsync();
+            await _user.LogoffAsync();
 
-            Log.Info("Logged out user.");
+            Logger.LogInfo("Logged out user.");
         }
 
-        public async Task UnregisterDevice()
+        public async Task LogoutDeviceAsync()
         {
-            Log.Info("Deregistering device...");
+            Logger.LogInfo("Logout device...");
 
             if (!IsRegistered)
             {
@@ -148,21 +157,19 @@ namespace MASFoundation.Internal
                 return;
             }
 
-            await Device.UnregisterAsync();
+            await _device.UnregisterAsync();
 
             // Remove all stored data since we unregistered the device
             await ResetAsync();
 
-            Log.Info("Deregistered device");
+            Logger.LogInfo("Logout device");
         }
 
-        public ILogger Log { get; set; }
-
-        public Device Device { get; private set; }
-
-        public User User { get; private set; }
-
         Configuration _config;
+        SecureStorage _storage;
+        Device _device;
+        User _user;
         RegistrationKind _registrationKind = RegistrationKind.Client;
+        CertManager _certManager;
     }
 }

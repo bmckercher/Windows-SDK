@@ -23,7 +23,6 @@
                     return "No error detected";
                 case JsonValidationErrorKind.NullValue:
                     return string.Format("{0} has a null value", Rule.Path);
-                    break;
                 default:
                     return "Unknown error";
             }

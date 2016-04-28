@@ -6,18 +6,24 @@ namespace MASFoundation.Internal
 {
     internal class User
     {
-        public User(Configuration config, Device device)
+        public User(Configuration config, Device device, SecureStorage storage)
         {
             _config = config;
             _device = device;
+            _storage = storage;
+        }
+
+        public bool IsLoggedIn
+        {
+            get { return _accessToken != null; }
         }
 
         public async Task InitializeAsync()
         {
-            _accessToken = await SecureStorage.GetTextAsync("accessToken");
-            _refreshToken = await SecureStorage.GetTextAsync("refreshToken");
+            _accessToken = await _storage.GetTextAsync("accessToken");
+            _refreshToken = await _storage.GetTextAsync("refreshToken");
 
-            var expireTime = await SecureStorage.GetDateAsync("expireTime");
+            var expireTime = await _storage.GetDateAsync("expireTime");
             if (expireTime != null)
             {
                 _expireTimeUtc = expireTime.Value;
@@ -27,8 +33,8 @@ namespace MASFoundation.Internal
                 _expireTimeUtc = DateTime.MinValue;
             }
 
-            _idToken = await SecureStorage.GetTextAsync("idToken");
-            _idTokenType = await SecureStorage.GetTextAsync("idTokenType");
+            _idToken = await _storage.GetTextAsync("idToken");
+            _idTokenType = await _storage.GetTextAsync("idTokenType");
 
             // We have an id token but not an access token, try to get an access token.
             if (_idToken != null && _idTokenType != null && _accessToken == null)
@@ -98,12 +104,12 @@ namespace MASFoundation.Internal
             _refreshToken = data.RefreshToken;
             _expireTimeUtc = DateTime.UtcNow.AddSeconds(data.ExpiresIn);
 
-            await SecureStorage.SetAsync("accessToken", false, _accessToken);
-            await SecureStorage.SetAsync("expireTime", false, _expireTimeUtc);
+            await _storage.SetAsync("accessToken", false, _accessToken);
+            await _storage.SetAsync("expireTime", false, _expireTimeUtc);
 
             if (_refreshToken != null)
             {
-                await SecureStorage.SetAsync("refreshToken", false, _refreshToken);
+                await _storage.SetAsync("refreshToken", false, _refreshToken);
             }
 
             if (data.IdToken != null && data.IdTokenType != null)
@@ -111,8 +117,8 @@ namespace MASFoundation.Internal
                 _idToken = data.IdToken;
                 _idTokenType = data.IdTokenType;
 
-                await SecureStorage.SetAsync("idToken", true, _idToken);
-                await SecureStorage.SetAsync("idTokenType", true, _idTokenType);
+                await _storage.SetAsync("idToken", true, _idToken);
+                await _storage.SetAsync("idTokenType", true, _idTokenType);
             }
         }
 
@@ -123,5 +129,6 @@ namespace MASFoundation.Internal
         string _idTokenType;
         Configuration _config;
         Device _device;
+        SecureStorage _storage;
     }
 }

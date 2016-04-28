@@ -17,7 +17,7 @@ namespace MASFoundation.Internal.Http
 
             if (requestInfo.Certificate != null)
             {
-                Session.Instance.Log.Info("Requesting Mutual SSL " + requestInfo.Method + " url " + requestInfo.Url);
+                Logger.LogInfo("Requesting Mutual SSL " + requestInfo.Method + " url " + requestInfo.Url);
                 var handler = new HttpClientHandler();
                 handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
 
@@ -25,7 +25,7 @@ namespace MASFoundation.Internal.Http
             }
             else
             {
-                Session.Instance.Log.Info("Requesting " + requestInfo.Method + " url " + requestInfo.Url);
+                Logger.LogInfo("Requesting " + requestInfo.Method + " url " + requestInfo.Url);
 
                 var handler = new HttpClientHandler();
                 handler.ClientCertificateOptions = ClientCertificateOption.Manual;

@@ -44,6 +44,5 @@ namespace MASFoundation.Internal
 
         static HttpRequesterBase _normalRequestImpl;
         static HttpRequesterBase _mutualRequestImpl;
-
     }    
 }

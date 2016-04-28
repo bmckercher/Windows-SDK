@@ -8,8 +8,8 @@ namespace MASUtility
     public ref class Encryptor sealed
     {
     public:
-		IAsyncOperation<IBuffer^>^ EncryptAsync(IBuffer^ data);
-		IAsyncOperation<IBuffer^>^ DecryptAsync(IBuffer^ data);
+		IAsyncOperation<IBuffer^>^ EncryptAsync(IBuffer^ data, String^ entropy);
+		IAsyncOperation<IBuffer^>^ DecryptAsync(IBuffer^ data, String^ entropy);
 
 	private:
 		BYTE* GetDataFromIBuffer(IBuffer^ buffer);

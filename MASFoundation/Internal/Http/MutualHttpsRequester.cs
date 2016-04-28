@@ -13,7 +13,7 @@ namespace MASFoundation.Internal.Http
         {
             HttpTextResponse response = new HttpTextResponse();
 
-            Session.Instance.Log.Info("Requesting Mutual SSL " + requestInfo.Method + " url " + requestInfo.Url);
+            Logger.LogInfo("Requesting Mutual SSL " + requestInfo.Method + " url " + requestInfo.Url);
             HttpBaseProtocolFilter filter = new HttpBaseProtocolFilter();
             filter.ClientCertificate = requestInfo.Certificate;
             HttpClient client = new HttpClient(filter);

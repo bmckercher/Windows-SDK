@@ -8,9 +8,14 @@ using Windows.Storage.Streams;
 
 namespace MASFoundation.Internal
 {
-    internal static class SecureStorage
+    internal class SecureStorage
     {
-        public static async Task<string> GetTextAsync(string key)
+        public SecureStorage(Configuration config)
+        {
+            _config = config;
+        }
+
+        public async Task<string> GetTextAsync(string key)
         {
             var data = await GetBytesAsync(key);
 
@@ -22,7 +27,7 @@ namespace MASFoundation.Internal
             return null;
         }
 
-        public static async Task<DateTime?> GetDateAsync(string key)
+        public async Task<DateTime?> GetDateAsync(string key)
         {
             var data = await GetBytesAsync(key);
             if (data != null)
@@ -33,30 +38,38 @@ namespace MASFoundation.Internal
             return null;
         }
 
-        public static Task SetAsync(string key, bool isShared, string text)
+        public Task SetAsync(string key, bool isShared, string text)
         {
             return SetAsync(key, isShared, Encoding.UTF8.GetBytes(text));
         }
 
-        public static Task SetAsync(string key, bool isShared, DateTime date)
+        public Task SetAsync(string key, bool isShared, DateTime date)
         {
             return SetAsync(key, isShared, BitConverter.GetBytes(date.ToBinary()));
         }
 
-        public static async Task<IBuffer> GetIBufferAsync(string key)
+        public async Task<IBuffer> GetIBufferAsync(string key)
         {
-            var file = await GetFileAsync(key);
-            if (file != null)
+            var info = await GetFileAsync(key);
+            if (info != null)
             {
-                var stream = await FileIO.ReadBufferAsync(file);
-                var decrypted = await _encryptor.DecryptAsync(stream);
-                return decrypted;
+                try
+                {
+                    var stream = await FileIO.ReadBufferAsync(info.File);
+                    var decrypted = await _encryptor.DecryptAsync(stream, GetEntropy(info.IsShared));
+                    return decrypted;
+                }
+                catch
+                {
+                }
+
+                return null;
             }
 
             return null;
         }
 
-        public static async Task<byte[]> GetBytesAsync(string key)
+        public async Task<byte[]> GetBytesAsync(string key)
         {
             var buffer = await GetIBufferAsync(key);
             if (buffer != null)
@@ -67,12 +80,12 @@ namespace MASFoundation.Internal
             return null;
         }
 
-        public static Task SetAsync(string key, bool isShared, byte[] data)
+        public Task SetAsync(string key, bool isShared, byte[] data)
         {
             return SetAsync(key, isShared, data.AsBuffer());
         }
 
-        public static async Task SetAsync(string key, bool isShared, IBuffer buffer)
+        public async Task SetAsync(string key, bool isShared, IBuffer buffer)
         {
             StorageFile file = null;
             if (isShared)
@@ -94,16 +107,16 @@ namespace MASFoundation.Internal
                 file = await folder.CreateFileAsync(key, CreationCollisionOption.ReplaceExisting);
             }
 
-            var encrypted = await _encryptor.EncryptAsync(buffer);
+            var encrypted = await _encryptor.EncryptAsync(buffer, GetEntropy(isShared));
             await FileIO.WriteBufferAsync(file, encrypted);
         }
 
         public static async Task RemoveAsync(string key)
         {
-            var file = await GetFileAsync(key);
-            if (file != null)
+            var info = await GetFileAsync(key);
+            if (info != null)
             {
-                await file.DeleteAsync(StorageDeleteOption.PermanentDelete);
+                await info.File.DeleteAsync(StorageDeleteOption.PermanentDelete);
             }
         }
 
@@ -124,8 +137,9 @@ namespace MASFoundation.Internal
             }
         }
 
-        async static Task<StorageFile> GetFileAsync(string key)
+        async static Task<LoadedFileInfo> GetFileAsync(string key)
         {
+            bool isShared = true;
             var folder = ApplicationData.Current.GetPublisherCacheFolder("keys");
 
             var item = await folder.TryGetItemAsync(key);
@@ -134,16 +148,41 @@ namespace MASFoundation.Internal
             {
                 folder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("keys", CreationCollisionOption.OpenIfExists);
                 item = await folder.TryGetItemAsync(key);
+                isShared = false;
             }
 
             if (item != null)
             {
-                return (StorageFile)item;
+                return new LoadedFileInfo()
+                {
+                    File = (StorageFile)item,
+                    IsShared = isShared
+                };
             }
 
             return null;
         }
 
-        static Encryptor _encryptor = new Encryptor();
+        string GetEntropy(bool isShared)
+        {
+            if (!isShared)
+            {
+                return _config.DefaultClientId.Id;
+            }
+            else
+            {
+                return _config.OAuth.Client.Organization;
+            }
+        }
+
+        Encryptor _encryptor = new Encryptor();
+
+        class LoadedFileInfo
+        {
+            public StorageFile File { get; set; }
+            public bool IsShared { get; set;}
+        }
+
+        Configuration _config;
     }
 }

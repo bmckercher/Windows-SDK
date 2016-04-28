@@ -1,6 +1,7 @@
 ﻿using MASFoundation.Internal.Data;
 using System;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Storage;
@@ -159,10 +160,19 @@ namespace MASFoundation.Internal
             {
                 var configException = new MAGConfigException();
 
+                var sb = new StringBuilder("The configuration file failed to validate!");
+                sb.AppendLine();
+
                 foreach (var error in results.Errors)
                 {
-                    configException.Errors.Add(error.ToString());
+                    var errorText = error.ToString();
+
+                    configException.Errors.Add(errorText);
+
+                    sb.AppendLine(errorText);
                 }
+
+                Logger.LogError(sb.ToString());
 
                 ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedJsonValidation, configException);
             }

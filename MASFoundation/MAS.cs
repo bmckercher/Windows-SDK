@@ -15,10 +15,10 @@ namespace MASFoundation
             ConfigFileName = "msso_config.json";
             RegistrationKind = RegistrationKind.Client;
 
-            Session.Instance.LoginRequested += Instance_LoginRequested;
+            _session.LoginRequested += _session_LoginRequested;
         }
 
-        private static void Instance_LoginRequested(object sender, EventArgs e)
+        private static void _session_LoginRequested(object sender, EventArgs e)
         {
             LoginRequested?.Invoke(null, e);
         }
@@ -54,7 +54,7 @@ namespace MASFoundation
         /// <returns></returns>
         public static Task StartAsync()
         {
-            return Session.Instance.StartAsync(ConfigFileName, RegistrationKind);
+            return _session.StartAsync(ConfigFileName, RegistrationKind);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace MASFoundation
         /// <returns></returns>
         public static Task StopAsync()
         {
-            return Session.Instance.StopAsync();
+            return _session.StopAsync();
         }
 
         /// <summary>
@@ -72,16 +72,7 @@ namespace MASFoundation
         /// <returns></returns>
         public static Task ResetAsync()
         {
-            return Session.Instance.ResetAsync();
-        }
-
-        /// <summary>
-        /// Remove the device’s record from the MAG.
-        /// </summary>
-        /// <returns></returns>
-        public static async Task DeregisterCurrentDeviceAsync()
-        {
-            await Session.Instance.UnregisterDevice();
+            return _session.ResetAsync();
         }
 
         /// <summary>
@@ -92,7 +83,7 @@ namespace MASFoundation
         /// <returns></returns>
         public static async Task AuthenticateUserAsync(string username, string password)
         {
-            await Session.Instance.LoginUserAsync(username, password);
+            await _session.LoginUserAsync(username, password);
         }
 
         /// <summary>
@@ -101,7 +92,16 @@ namespace MASFoundation
         /// <returns></returns>
         public static async Task LogoffUserAsync()
         {
-            await Session.Instance.LogoffUserAsync();
+            await _session.LogoffUserAsync();
+        }
+
+        /// <summary>
+        /// Logs out the device by removing the device registration from the server and removing the cached id token and access token from the device. The shared keychain contains the id_token, certificate, keys, and device identifier. Using logoutDevice also clears up the id_token on the MAG. 
+        /// </summary>
+        /// <returns></returns>
+        public static async Task LogoutDeviceAsync()
+        {
+            await _session.LogoutDeviceAsync();
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace MASFoundation
             IDictionary<string, string> headerInfo,
             ResponseType responseType)
         {
-            if (!Session.Instance.IsRegistered)
+            if (!_session.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
@@ -139,7 +139,7 @@ namespace MASFoundation
                 Url = builder.ToString(),
                 Method = HttpMethod.DELETE,
                 Headers = headers,
-                Certificate = Session.Instance.Device.Certificate
+                Certificate = _session.Certificate
             }));
         }
 
@@ -156,7 +156,7 @@ namespace MASFoundation
             IDictionary<string, string> headerInfo,
             ResponseType responseType)
         {
-            if (!Session.Instance.IsRegistered)
+            if (!_session.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
@@ -178,7 +178,7 @@ namespace MASFoundation
                 Url = builder.ToString(),
                 Method = HttpMethod.GET,
                 Headers = headers,
-                Certificate = Session.Instance.Device.Certificate
+                Certificate = _session.Certificate
             }));
         }
 
@@ -197,7 +197,7 @@ namespace MASFoundation
             RequestType requestType,
             ResponseType responseType)
         {
-            if (!Session.Instance.IsRegistered)
+            if (!_session.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
@@ -209,7 +209,7 @@ namespace MASFoundation
                 Url = endPointPath,
                 Method = HttpMethod.POST,
                 Headers = headers,
-                Certificate = Session.Instance.Device.Certificate,
+                Certificate = _session.Certificate,
                 Body = body ?? string.Empty
             }));
         }
@@ -249,7 +249,7 @@ namespace MASFoundation
             RequestType requestType,
             ResponseType responseType)
         {
-            if (!Session.Instance.IsRegistered)
+            if (!_session.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
@@ -261,7 +261,7 @@ namespace MASFoundation
                 Url = endPointPath,
                 Method = HttpMethod.PUT,
                 Headers = headers,
-                Certificate = Session.Instance.Device.Certificate,
+                Certificate = _session.Certificate,
                 Body = body
             }));
         }
@@ -285,6 +285,8 @@ namespace MASFoundation
 
             return PutToAsync(endPointPath, body, headerInfo, requestType, responseType);
         }
+
+        #region Private Methods
 
         static string FormatBody(RequestType type, IDictionary<string, string> parameterInfo)
         {
@@ -312,13 +314,13 @@ namespace MASFoundation
 
         static async Task<Dictionary<string, string>> SetupRequestHeaders(IDictionary<string, string> givenHeaders, RequestType requestType, ResponseType responseType)
         {
-            var deviceMagId = Session.Instance.Device.MagId;
+            var deviceMagId = _session.MagId;
             var headers = new Dictionary<string, string>
             {
                 { "mag-identifier", deviceMagId }
             };
 
-            var accessTokenHeaderValue = await Session.Instance.User.GetAccessHeaderValueAsync();
+            var accessTokenHeaderValue = await _session.GetAccessHeaderValueAsync();
             if (accessTokenHeaderValue != null)
             {
                 headers[HttpHeaders.Authorization] = accessTokenHeaderValue;
@@ -393,5 +395,10 @@ namespace MASFoundation
                 Text = response.Text
             };
         }
+
+        #endregion
+
+        // The one and only session
+        static Session _session = new Session();
     }
 }
