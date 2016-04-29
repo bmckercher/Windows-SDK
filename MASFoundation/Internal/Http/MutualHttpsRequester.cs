@@ -96,6 +96,8 @@ namespace MASFoundation.Internal.Http
                     return Windows.Web.Http.HttpMethod.Post;
                 case HttpMethod.PUT:
                     return Windows.Web.Http.HttpMethod.Put;
+                case HttpMethod.PATCH:
+                    return Windows.Web.Http.HttpMethod.Patch;
                 default:
                     return Windows.Web.Http.HttpMethod.Get;
             }

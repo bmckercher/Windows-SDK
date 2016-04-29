@@ -134,7 +134,14 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                var response = await MAS.GetFromAsync("https://test.pulsenow.co.uk/openid/connect/v1/userinfo", null, null, ResponseType.Json);
+                if (BritishGasTestConfigBtn.IsChecked.GetValueOrDefault())
+                {
+                    var response = await MAS.GetFromAsync("https://test.pulsenow.co.uk/openid/connect/v1/userinfo", null, null, ResponseType.Json);
+                }
+                else
+                {
+                    var response = await MAS.GetFromAsync("https://masdemo.dev.ca.com:8443/openid/connect/v1/userinfo", null, null, ResponseType.Json);
+                }
             }
             catch (Exception exp)
             {

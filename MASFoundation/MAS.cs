@@ -14,6 +14,7 @@ namespace MASFoundation
         {
             ConfigFileName = "msso_config.json";
             RegistrationKind = RegistrationKind.Client;
+            LogLevel = LogLevel.None;
 
             _session.LoginRequested += _session_LoginRequested;
         }
@@ -58,15 +59,6 @@ namespace MASFoundation
         }
 
         /// <summary>
-        /// Stop all processes in the framework.
-        /// </summary>
-        /// <returns></returns>
-        public static Task StopAsync()
-        {
-            return _session.StopAsync();
-        }
-
-        /// <summary>
         /// Reset all application, device, and user credentials in memory, or in the local and shared storage.
         /// </summary>
         /// <returns></returns>
@@ -76,7 +68,7 @@ namespace MASFoundation
         }
 
         /// <summary>
-        /// Remove the device’s record from the MAG.
+        /// Remove the device’s record from the MAG. And Deletes all stored tokens and client credentials.
         /// </summary>
         /// <returns></returns>
         public static async Task UnregisterDeviceAsync()
@@ -234,6 +226,58 @@ namespace MASFoundation
         /// <returns></returns>
         public static Task<TextResponse> PostToAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
+            IDictionary<string, string> headerInfo,
+            RequestType requestType,
+            ResponseType responseType)
+        {
+            var body = FormatBody(requestType, parameterInfo);
+
+            return PostToAsync(endPointPath, body, headerInfo, requestType, responseType);
+        }
+
+        /// <summary>
+        /// This method makes HTTP PATCH calls to an endpoint.
+        /// </summary>
+        /// <param name="endPointPath"></param>
+        /// <param name="body"></param>
+        /// <param name="headerInfo"></param>
+        /// <param name="requestType"></param>
+        /// <param name="responseType"></param>
+        /// <returns></returns>
+        public static async Task<TextResponse> PatchToAsync(string endPointPath,
+            string body,
+            IDictionary<string, string> headerInfo,
+            RequestType requestType,
+            ResponseType responseType)
+        {
+            if (!_session.IsRegistered)
+            {
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
+            }
+
+            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
+
+            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
+            {
+                Url = endPointPath,
+                Method = HttpMethod.PATCH,
+                Headers = headers,
+                Certificate = _session.Certificate,
+                Body = body ?? string.Empty
+            }));
+        }
+
+        /// <summary>
+        /// This method makes HTTP PATCH calls to an endpoint.
+        /// </summary>
+        /// <param name="endPointPath"></param>
+        /// <param name="parameterInfo"></param>
+        /// <param name="headerInfo"></param>
+        /// <param name="requestType"></param>
+        /// <param name="responseType"></param>
+        /// <returns></returns>
+        public static Task<TextResponse> PatchToAsync(string endPointPath,
+            IDictionary<string, string> parameterInfo,
             IDictionary<string, string> headerInfo,
             RequestType requestType,
             ResponseType responseType)

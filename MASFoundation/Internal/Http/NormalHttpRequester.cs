@@ -106,6 +106,8 @@ namespace MASFoundation.Internal.Http
                     return System.Net.Http.HttpMethod.Post;
                 case HttpMethod.PUT:
                     return System.Net.Http.HttpMethod.Put;
+                case HttpMethod.PATCH:
+                    return new System.Net.Http.HttpMethod("PATCH");
                 default:
                     return System.Net.Http.HttpMethod.Get;
             }
