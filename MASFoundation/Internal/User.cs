@@ -54,9 +54,20 @@ namespace MASFoundation.Internal
         {
             await MAGRequests.RevokeAccessTokenAsync(_config, _device, this);
 
+            await RemoveCacheAsync();
+        }
+
+        public async Task RemoveCacheAsync()
+        {
+            _accessToken = _refreshToken = _idToken = _idTokenType = null;
+            _expireTimeUtc = DateTime.MinValue;
+
             await SecureStorage.RemoveAsync("accessToken");
             await SecureStorage.RemoveAsync("refreshToken");
             await SecureStorage.RemoveAsync("expireTime");
+
+            await SecureStorage.RemoveAsync("idToken");
+            await SecureStorage.RemoveAsync("idTokenType");
         }
 
         public async Task<string> GetAccessTokenAsync()

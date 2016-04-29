@@ -159,10 +159,28 @@ namespace MASFoundation.Internal
 
             await _device.UnregisterAsync();
 
+            // Remove cached user access and id tokens.
+            await _user.RemoveCacheAsync();
+
+            Logger.LogInfo("Logout device");
+        }
+
+        public async Task UnregisterDevice()
+        {
+            Logger.LogInfo("Deregistering device...");
+
+            if (!IsRegistered)
+            {
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
+                return;
+            }
+
+            await _device.UnregisterAsync();
+
             // Remove all stored data since we unregistered the device
             await ResetAsync();
 
-            Logger.LogInfo("Logout device");
+            Logger.LogInfo("Deregistered device");
         }
 
         Configuration _config;

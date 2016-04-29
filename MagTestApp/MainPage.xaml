@@ -35,7 +35,8 @@
             </GridView.ItemsPanel>
             <Button x:Name="StartBtn" Click="StartBtn_Click" Width="100" Height="100" Content="Start"/>
             <Button x:Name="LoginBtn" Click="LoginBtn_Click" Width="100" Height="100" Content="Login"/>
-            <Button x:Name="UnregisterBtn" Click="UnregisterBtn_Click" Width="100" Height="100" Content="Unregister"/>
+            <Button x:Name="UnregisterBtn" Click="UnregisterBtn_Click" Width="100" Height="100" Content="Unregister&#10;Device"/>
+            <Button x:Name="LogoutDeviceBtn" Click="LogoutDeviceBtn_Click" Width="100" Height="100" Content="Logout&#10;Device"/>
             <Button x:Name="LogoffBtn" Click="LogoffBtn_Click" Width="100" Height="100" Content="Logoff"/>
             <Button x:Name="GetUserInfoBtn" Click="GetUserInfoBtn_Click" Width="100" Height="100" Content="User Info"/>
             <Button x:Name="ResetBtn" Click="ResetBtn_Click" Width="100" Height="100" Content="Reset"/>

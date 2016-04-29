@@ -76,6 +76,15 @@ namespace MASFoundation
         }
 
         /// <summary>
+        /// Remove the device’s record from the MAG.
+        /// </summary>
+        /// <returns></returns>
+        public static async Task UnregisterDeviceAsync()
+        {
+            await _session.UnregisterDevice();
+        }
+
+        /// <summary>
         /// Authenticate a user with basic credentials.
         /// </summary>
         /// <param name="username"></param>

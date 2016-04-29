@@ -78,7 +78,22 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await MAS.DeregisterCurrentDeviceAsync();
+                await MAS.UnregisterDeviceAsync();
+            }
+            catch (Exception exp)
+            {
+                ((ILogger)this).Error("Unregister failed " + exp.ToString());
+            }
+
+            IsBusy = false;
+        }
+
+        private async void LogoutDeviceBtn_Click(object sender, RoutedEventArgs e)
+        {
+            IsBusy = true;
+            try
+            {
+                await MAS.LogoutDeviceAsync();
             }
             catch (Exception exp)
             {
@@ -217,5 +232,7 @@ namespace MagTestApp
         {
             DebugInfo.Text = "";
         }
+
+
     }
 }
