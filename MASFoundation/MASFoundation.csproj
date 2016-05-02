@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ILogger.cs" />
+    <Compile Include="Internal\ApiErrorCode.cs" />
     <Compile Include="Internal\CertManager.cs" />
     <Compile Include="Internal\Configuration.cs" />
     <Compile Include="Internal\Data\JsonValidator\JsonValidationError.cs" />

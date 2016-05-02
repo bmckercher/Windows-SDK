@@ -15,23 +15,12 @@ namespace MASFoundation.Internal.Http
 
             HttpClient client;
 
-            if (requestInfo.Certificate != null)
-            {
-                Logger.LogInfo("Requesting Mutual SSL " + requestInfo.Method + " url " + requestInfo.Url);
-                var handler = new HttpClientHandler();
-                handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
+            Logger.LogInfo("Requesting " + requestInfo.Method + " url " + requestInfo.Url);
 
-                client = new HttpClient(handler);
-            }
-            else
-            {
-                Logger.LogInfo("Requesting " + requestInfo.Method + " url " + requestInfo.Url);
+            var handler = new HttpClientHandler();
+            handler.ClientCertificateOptions = ClientCertificateOption.Automatic;
 
-                var handler = new HttpClientHandler();
-                handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-
-                client = new HttpClient(handler);
-            }
+            client = new HttpClient(handler);
 
             HttpRequestMessage httpRequest = new HttpRequestMessage(ToRequestMethod(requestInfo.Method), new Uri(requestInfo.Url));
 

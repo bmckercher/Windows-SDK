@@ -130,13 +130,20 @@ namespace MASFoundation.Internal
 
         public async Task UnregisterAsync()
         {
-            await MAGRequests.UnregisterDevice(_config, this);
-
-            if (Certificate != null)
+            try
             {
-                await CertManager.UninstallAsync();
-                Certificate = null;
-                RegisteredUsername = null;
+                await MAGRequests.UnregisterDevice(_config, this);
+
+                if (Certificate != null)
+                {
+                    await CertManager.UninstallAsync();
+                    Certificate = null;
+                    RegisteredUsername = null;
+                }
+            }
+            catch (Exception e)
+            {
+                ErrorFactory.ThrowError(ErrorCode.DeviceCouldNotBeDeregistered, e);
             }
         }
 
