@@ -1,12 +1,7 @@
 ﻿using MASFoundation.Internal.Data;
 using MASFoundation.Internal.Http;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
 using System.Threading.Tasks;
-using Windows.Security.Cryptography.Certificates;
 
 namespace MASFoundation.Internal
 {
@@ -145,11 +140,39 @@ namespace MASFoundation.Internal
                 { HttpHeaders.Accept, HttpContentTypes.Json }
             };
 
-            var response = await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
+            await HttpRequestFactory.RequestAsync<HttpResponseBaseData>(new HttpRequestInfo()
             {
                 Method = HttpMethod.DELETE,
                 Headers = headers,
                 Url = builder.ToString(),
+            });
+        }
+
+        public static async Task LogoutSessionAsync(Configuration config, Device device, User user, bool logoutApps)
+        {
+            var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.UserSessionLogout);
+
+            var accessToken = await user.GetAccessTokenAsync();
+
+            HttpUrlBuilder builder = new HttpUrlBuilder();
+            builder.Add("logout_apps", logoutApps ? "true" : "false");
+            builder.Add("token", accessToken);
+            builder.Add("token_type_hint", "access_token");
+
+            var headers = new Dictionary<string, string>
+            {
+                { HttpHeaders.Authorization, device.AuthHeaderValue },
+                { HttpHeaders.Accept, HttpContentTypes.Json },
+                { "mag-identifier", device.MagId },
+                { HttpHeaders.ContentType, HttpContentTypes.UrlEncoded }
+            };
+
+            await HttpRequestFactory.RequestAsync<HttpResponseBaseData>(new HttpRequestInfo()
+            {
+                Method = HttpMethod.POST,
+                Headers = headers,
+                Url = url,
+                Body = builder.ToString()
             });
         }
 

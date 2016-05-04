@@ -158,7 +158,7 @@ namespace MASFoundation.Internal
 
             if (results.HasErrors)
             {
-                var configException = new MAGConfigException();
+                var configException = new MASConfigException();
 
                 var sb = new StringBuilder("The configuration file failed to validate!");
                 sb.AppendLine();

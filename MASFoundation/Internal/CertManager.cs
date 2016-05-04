@@ -30,7 +30,7 @@ namespace MASFoundation.Internal
 
         public async Task<Certificate> GetAsync()
         {
-            var certUsername = await _storage.GetTextAsync("registeredCertSubject");
+            var certUsername = await _storage.GetTextAsync(StorageKeyNames.RegisteredCertSubject);
 
             if (certUsername != null)
             {
@@ -112,13 +112,13 @@ namespace MASFoundation.Internal
 
             await CertificateEnrollmentManager.InstallCertificateAsync(certResponse, InstallOptions.DeleteExpired);
 
-            await _storage.SetAsync("registeredCertSubject", false, cert.Subject);
+            await _storage.SetAsync(StorageKeyNames.RegisteredCertSubject, false, cert.Subject);
         }
 
         public static async Task UninstallAsync()
         {
             // Windows 10 doesn't support an uninstall method at the moment.  Let's forget about the cert ourselves.
-            await SecureStorage.RemoveAsync("registeredCertSubject");
+            await SecureStorage.RemoveAsync(StorageKeyNames.RegisteredCertSubject);
         }
 
         #region Bouncy castle member variables

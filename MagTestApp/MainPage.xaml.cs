@@ -50,7 +50,7 @@ namespace MagTestApp
         {
             try
             {
-                await MAS.AuthenticateUserAsync("winsdktest2", "P@$$w0rd01");
+                var user = await User.LoginAsync("winsdktest2", "P@$$w0rd01");
             }
             catch (Exception exp)
             {
@@ -63,7 +63,7 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await MAS.AuthenticateUserAsync("winsdktest2", "P@$$w0rd01");
+                await User.LoginAsync("winsdktest2", "P@$$w0rd01");
             }
             catch (Exception exp)
             {
@@ -78,7 +78,7 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await MAS.UnregisterDeviceAsync();
+                await Device.Current.UnregisterAsync();
             }
             catch (Exception exp)
             {
@@ -93,11 +93,11 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await MAS.LogoutDeviceAsync();
+                await Device.Current.LogoutAsync(true);
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("Unregister failed " + exp.ToString());
+                ((ILogger)this).Error("Logout device failed " + exp.ToString());
             }
 
             IsBusy = false;
@@ -108,7 +108,14 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await MAS.LogoffUserAsync();
+                if (User.Current != null)
+                {
+                    await User.Current.LogoffAsync();
+                }
+                else
+                {
+                    ((ILogger)this).Info("No current user!");
+                }
             }
             catch (Exception exp)
             {
@@ -134,13 +141,13 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                if (BritishGasTestConfigBtn.IsChecked.GetValueOrDefault())
+                if (User.Current != null)
                 {
-                    var response = await MAS.GetFromAsync("https://test.pulsenow.co.uk/openid/connect/v1/userinfo", null, null, ResponseType.Json);
+                    await User.Current.GetInfoAsync();
                 }
                 else
                 {
-                    var response = await MAS.GetFromAsync("https://masdemo.dev.ca.com:8443/openid/connect/v1/userinfo", null, null, ResponseType.Json);
+                    ((ILogger)this).Info("No current user!");
                 }
             }
             catch (Exception exp)

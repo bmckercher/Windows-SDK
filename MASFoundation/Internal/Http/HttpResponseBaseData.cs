@@ -4,7 +4,13 @@ namespace MASFoundation.Internal.Http
 {
     internal class HttpResponseBaseData
     {
-        public HttpResponseBaseData(HttpTextResponse response, ResponseType responseType = ResponseType.Unknown)
+        public HttpResponseBaseData(HttpTextResponse response) : 
+            this(response, ResponseType.Unknown)
+        {
+
+        }
+
+        public HttpResponseBaseData(HttpTextResponse response, ResponseType responseType)
         {
             try
             {
@@ -18,8 +24,9 @@ namespace MASFoundation.Internal.Http
             {
             }
 
-            string errorCodeText = _response.Headers["x-ca-err"];
-            if (errorCodeText != null)
+
+            string errorCodeText;
+            if (_response.Headers.TryGetValue("x-ca-err", out errorCodeText))
             {
                 int code;
                 if (int.TryParse(errorCodeText, out code))

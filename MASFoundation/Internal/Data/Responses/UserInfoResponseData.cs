@@ -8,7 +8,7 @@ using Windows.Data.Json;
 
 namespace MASFoundation.Internal.Data
 {
-    internal class UserInfoResponseData : HttpResponseBaseData
+    internal class UserInfoResponseData : HttpResponseBaseData, IUserInfo
     {
         public UserInfoResponseData(HttpTextResponse response) :
             base(response, ResponseType.Json)
@@ -30,10 +30,10 @@ namespace MASFoundation.Internal.Data
         public string PerferredUsername { get; private set; }
         public string Email { get; private set; }
         public string Phone { get; private set; }
-        public AddressResponseData Address { get; private set; }
+        public IAddressInfo Address { get; private set; }
     }
 
-    internal class AddressResponseData
+    internal class AddressResponseData : IAddressInfo
     {
         public AddressResponseData(JsonObject jsonObject)
         {
