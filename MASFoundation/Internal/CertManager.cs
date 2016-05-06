@@ -112,7 +112,7 @@ namespace MASFoundation.Internal
 
             await CertificateEnrollmentManager.InstallCertificateAsync(certResponse, InstallOptions.DeleteExpired);
 
-            await _storage.SetAsync(StorageKeyNames.RegisteredCertSubject, false, cert.Subject);
+            await _storage.SetAsync(StorageKeyNames.RegisteredCertSubject, cert.Subject);
         }
 
         public static async Task UninstallAsync()

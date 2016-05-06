@@ -25,11 +25,11 @@
   <Capabilities>
     <Capability Name="internetClient" />
   </Capabilities>
-  <Extensions>
+  <!--<Extensions>
     <Extension Category="windows.publisherCacheFolders">
       <PublisherCacheFolders>
         <Folder Name="keys" />
       </PublisherCacheFolders>
     </Extension>
-  </Extensions>
+  </Extensions>-->
 </Package>

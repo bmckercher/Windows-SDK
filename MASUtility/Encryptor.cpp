@@ -28,7 +28,8 @@ IAsyncOperation<IBuffer^>^ Encryptor::EncryptAsync(IBuffer^ data, String^ entrop
 
 		if (!::CryptProtectData(&dataIn, L"", pEntropyData, NULL, NULL, 0, &dataOut))
 		{
-			return nullptr;
+			DWORD dwError = ::GetLastError();
+			throw ref new COMException(HRESULT_FROM_WIN32(dwError));
 		}
 		else
 		{
@@ -61,7 +62,8 @@ IAsyncOperation<IBuffer^>^ Encryptor::DecryptAsync(IBuffer^ data, String^ entrop
 
 		if (!::CryptUnprotectData(&dataIn, &description, pEntropyData, NULL, NULL, 0, &dataOut))
 		{
-			return nullptr;
+			DWORD dwError = ::GetLastError();
+			throw ref new COMException(HRESULT_FROM_WIN32(dwError));
 		}
 		else
 		{

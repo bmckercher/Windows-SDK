@@ -2,6 +2,7 @@
 using MASFoundation.Internal.Data;
 using System;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.Security.Cryptography.Certificates;
 using Windows.Security.ExchangeActiveSyncProvisioning;
 
@@ -12,7 +13,7 @@ namespace MASFoundation
         internal Device(Configuration config)
         {
             _config = config;
-            _storage = new SecureStorage(config);
+            _storage = new SecureStorage();
             _certManager = new CertManager(_storage);
         }
 
@@ -50,7 +51,17 @@ namespace MASFoundation
             }
         }
 
-        public async Task RegisterWithClientAsync()
+        public IAsyncAction RegisterWithClientAsync()
+        {
+            return RegisterWithClientInternalAsync().AsAsyncAction();
+        }
+
+        internal static void Reset()
+        {
+            Current = null;
+        }
+
+        async Task RegisterWithClientInternalAsync()
         {
             var username = "clientName";
             var csr = await _certManager.GenerateCSRAsync(_config, this, username);
@@ -60,7 +71,12 @@ namespace MASFoundation
             await FinalizeRegistrationAsync(response, username);
         }
 
-        public async Task RegisterWithUserAsync(string username, string password)
+        public IAsyncAction RegisterWithUserAsync(string username, string password)
+        {
+            return RegisterWithUserInternalAsync(username, password).AsAsyncAction();
+        }
+
+        async Task RegisterWithUserInternalAsync(string username, string password)
         {
             var csr = await _certManager.GenerateCSRAsync(_config, this, username);
 
@@ -69,9 +85,13 @@ namespace MASFoundation
             await FinalizeRegistrationAsync(response, username);
         }
 
-        public async Task UnregisterAsync()
+        public IAsyncAction UnregisterAsync()
         {
+            return UnregisterInternalAsync().AsAsyncAction();
+        }
 
+        async Task UnregisterInternalAsync()
+        {
             if (!IsApplicationRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
@@ -92,6 +112,8 @@ namespace MASFoundation
                     Certificate = null;
                     RegisteredUsername = null;
                 }
+
+                await Application.Current.ResetAsync();
             }
             catch (Exception e)
             {
@@ -99,7 +121,12 @@ namespace MASFoundation
             }
         }
 
-        public async Task LogoutAsync(bool clearLocal)
+        public IAsyncAction LogoutAsync(bool clearLocal)
+        {
+            return LogoutInternalAsync(clearLocal).AsAsyncAction();
+        }
+
+        async Task LogoutInternalAsync(bool clearLocal)
         {
             if (!IsApplicationRegistered)
             {
@@ -160,7 +187,7 @@ namespace MASFoundation
             Certificate = await _certManager.GetAsync();
 
             RegisteredUsername = Certificate.Subject;
-            await _storage.SetAsync(StorageKeyNames.MagDeviceId, true, MagId);
+            await _storage.SetAsync(StorageKeyNames.MagDeviceId, MagId);
         }
 
         async Task LoadAsync()
@@ -187,9 +214,9 @@ namespace MASFoundation
                     _clientExpiration = clientCredResponse.Expiration.FromUnixTime();
                 }
 
-                await _storage.SetAsync(StorageKeyNames.ClientId, false, _clientId);
-                await _storage.SetAsync(StorageKeyNames.ClientSecret, false, _clientSecret);
-                await _storage.SetAsync(StorageKeyNames.ClientExpiration, false, _clientExpiration);
+                await _storage.SetAsync(StorageKeyNames.ClientId, _clientId);
+                await _storage.SetAsync(StorageKeyNames.ClientSecret, _clientSecret);
+                await _storage.SetAsync(StorageKeyNames.ClientExpiration, _clientExpiration);
             }
             else
             {
@@ -206,6 +233,8 @@ namespace MASFoundation
 
             if (Certificate == null || DateTime.Now > Certificate.ValidTo)
             {
+                RegisteredUsername = null;
+                Certificate = null;
                 await SecureStorage.RemoveAsync(StorageKeyNames.MagDeviceId);
             }
             else

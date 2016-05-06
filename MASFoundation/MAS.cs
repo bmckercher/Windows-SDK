@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Windows.Foundation;
+using Windows.Foundation.Metadata;
+using Windows.Storage;
 
 namespace MASFoundation
 {
@@ -33,6 +35,12 @@ namespace MASFoundation
         public static string ConfigFileName { get; set; }
 
         /// <summary>
+        /// The contents of the configuration file as an alternative to ConfigFileName.  If this is set, SDK will not load a configuration 
+        /// file with the name given by ConfigFileName.
+        /// </summary>
+        public static string ConfigText { get; set; }
+
+        /// <summary>
         /// Requested registration flow (client or user)
         /// </summary>
         public static RegistrationKind RegistrationKind { get; set; }
@@ -50,24 +58,60 @@ namespace MASFoundation
         /// <summary>
         /// Login is requested.  Application should present a login dialog or page to the user to enter their credentials.
         /// </summary>
-        public static event EventHandler LoginRequested;
+        public static event EventHandler<object> LoginRequested;
+
+        /// <summary>
+        /// A debug log message has been logged.
+        /// </summary>
+        public static event EventHandler<string> LogMessage;
 
         /// <summary>
         /// Starts the lifecycle of the MAS processes.  This includes the registration of the application to the Gateway, if the network is available.
         /// </summary>
         /// <returns></returns>
-        public static Task StartAsync()
+        public static IAsyncAction StartAsync()
         {
-            return Application.Current.StartAsync(ConfigFileName, RegistrationKind);
+            return StartInternalAsync().AsAsyncAction();
+        } 
+
+        internal static void RaiseLogMessage(string message)
+        {
+            LogMessage?.Invoke(null, "Info: " + message);
+        }
+
+        static async Task StartInternalAsync()
+        {
+            string configContent = ConfigText;
+
+            if (configContent == null)
+            {
+                if (string.IsNullOrEmpty(ConfigFileName))
+                {
+                    ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedFileNotFound);
+                }
+
+                try
+                {
+                    var dataUri = new Uri("ms-appx:///" + ConfigFileName, UriKind.Absolute);
+                    var file = await StorageFile.GetFileFromApplicationUriAsync(dataUri);
+                    configContent = await FileIO.ReadTextAsync(file);
+                }
+                catch (Exception e)
+                {
+                    ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedFileNotFound, e);
+                }
+            }
+
+            await Application.Current.StartAsync(configContent, RegistrationKind);
         }
 
         /// <summary>
         /// Reset all application, device, and user credentials in memory, or in the local and shared storage.
         /// </summary>
         /// <returns></returns>
-        public static Task ResetAsync()
+        public static IAsyncAction ResetAsync()
         {
-            return Application.Current.ResetAsync();
+            return Application.Current.ResetAsync().AsAsyncAction();
         }
 
         /// <summary>
@@ -78,7 +122,7 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<TextResponse> DeleteFromAsync(string endPointPath, 
+        public static IAsyncOperation<TextResponse> DeleteFromAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
             ResponseType responseType)
@@ -88,23 +132,50 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
-            var builder = new HttpUrlBuilder(endPointPath);
+            return RequestHttpAsync(HttpMethod.DELETE, endPointPath, parameterInfo, 
+                headerInfo, RequestType.None, responseType).AsAsyncOperation<TextResponse>();
+        }
 
-            if (parameterInfo != null)
+        static async Task<TextResponse> RequestHttpAsync(HttpMethod method, string endPointPath,
+            IDictionary<string, string> parameterInfo,
+            IDictionary<string, string> headerInfo,
+            RequestType requestType,
+            ResponseType responseType)
+        {
+            if (!Device.Current.IsRegistered)
             {
-                foreach (var paramInfo in parameterInfo)
-                {
-                    builder.Add(paramInfo.Key, paramInfo.Value);
-                }
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
-            var headers = await SetupRequestHeaders(headerInfo, RequestType.None, responseType);
+            string url = endPointPath;
+            string body = null;
+
+            if (method == HttpMethod.GET || method == HttpMethod.DELETE)
+            {
+                var builder = new HttpUrlBuilder(endPointPath);
+                if (parameterInfo != null)
+                {
+                    foreach (var paramInfo in parameterInfo)
+                    {
+                        builder.Add(paramInfo.Key, paramInfo.Value);
+                    }
+                }
+
+                url = builder.ToString();
+            }
+            else
+            {
+                body = FormatBody(requestType, parameterInfo);
+            }
+
+            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
 
             return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
             {
-                Url = builder.ToString(),
-                Method = HttpMethod.DELETE,
+                Url = url,
+                Method = method,
                 Headers = headers,
+                Body = body,
                 Certificate = Device.Current.Certificate
             }));
         }
@@ -117,7 +188,7 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<TextResponse> GetFromAsync(string endPointPath, 
+        public static IAsyncOperation<TextResponse> GetFromAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
             ResponseType responseType)
@@ -127,25 +198,8 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
-            var builder = new HttpUrlBuilder(endPointPath);
-
-            if (parameterInfo != null)
-            {
-                foreach (var paramInfo in parameterInfo)
-                {
-                    builder.Add(paramInfo.Key, paramInfo.Value);
-                }
-            }
-
-            var headers = await SetupRequestHeaders(headerInfo, RequestType.None, responseType);
-
-            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
-            {
-                Url = builder.ToString(),
-                Method = HttpMethod.GET,
-                Headers = headers,
-                Certificate = Device.Current.Certificate
-            }));
+            return RequestHttpAsync(HttpMethod.GET, endPointPath, parameterInfo,
+                headerInfo, RequestType.None, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
@@ -157,7 +211,8 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<TextResponse> PostToAsync(string endPointPath,
+        [DefaultOverload]
+        public static IAsyncOperation<TextResponse> PostToAsync(string endPointPath,
             string body,
             IDictionary<string, string> headerInfo,
             RequestType requestType,
@@ -168,16 +223,13 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
-            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
-
-            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
+            var parameterInfo = new Dictionary<string, string>
             {
-                Url = endPointPath,
-                Method = HttpMethod.POST,
-                Headers = headers,
-                Certificate = Device.Current.Certificate,
-                Body = body ?? string.Empty
-            }));
+                { "Body", body }
+            };
+
+            return RequestHttpAsync(HttpMethod.POST, endPointPath, parameterInfo,
+                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
@@ -189,15 +241,19 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static Task<TextResponse> PostToAsync(string endPointPath, 
+        public static IAsyncOperation<TextResponse> PostToAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
             RequestType requestType,
             ResponseType responseType)
         {
-            var body = FormatBody(requestType, parameterInfo);
+            if (!Device.Current.IsRegistered)
+            {
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
+            }
 
-            return PostToAsync(endPointPath, body, headerInfo, requestType, responseType);
+            return RequestHttpAsync(HttpMethod.POST, endPointPath, parameterInfo,
+                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
@@ -209,7 +265,8 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<TextResponse> PatchToAsync(string endPointPath,
+        [DefaultOverload]
+        public static IAsyncOperation<TextResponse> PatchToAsync(string endPointPath,
             string body,
             IDictionary<string, string> headerInfo,
             RequestType requestType,
@@ -220,16 +277,13 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
-            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
-
-            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
+            var parameterInfo = new Dictionary<string, string>
             {
-                Url = endPointPath,
-                Method = HttpMethod.PATCH,
-                Headers = headers,
-                Certificate = Device.Current.Certificate,
-                Body = body ?? string.Empty
-            }));
+                { "Body", body }
+            };
+
+            return RequestHttpAsync(HttpMethod.PATCH, endPointPath, parameterInfo,
+                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
@@ -241,15 +295,19 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static Task<TextResponse> PatchToAsync(string endPointPath,
+        public static IAsyncOperation<TextResponse> PatchToAsync(string endPointPath,
             IDictionary<string, string> parameterInfo,
             IDictionary<string, string> headerInfo,
             RequestType requestType,
             ResponseType responseType)
         {
-            var body = FormatBody(requestType, parameterInfo);
+            if (!Device.Current.IsRegistered)
+            {
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
+            }
 
-            return PostToAsync(endPointPath, body, headerInfo, requestType, responseType);
+            return RequestHttpAsync(HttpMethod.PATCH, endPointPath, parameterInfo,
+                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
@@ -261,7 +319,8 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static async Task<TextResponse> PutToAsync(string endPointPath,
+        [DefaultOverload]
+        public static IAsyncOperation<TextResponse> PutToAsync(string endPointPath,
             string body,
             IDictionary<string, string> headerInfo,
             RequestType requestType,
@@ -272,16 +331,13 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
 
-            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
-
-            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
+            var parameterInfo = new Dictionary<string, string>
             {
-                Url = endPointPath,
-                Method = HttpMethod.PUT,
-                Headers = headers,
-                Certificate = Device.Current.Certificate,
-                Body = body
-            }));
+                { "Body", body }
+            };
+
+            return RequestHttpAsync(HttpMethod.PUT, endPointPath, parameterInfo,
+                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
@@ -293,15 +349,19 @@ namespace MASFoundation
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
         /// <returns></returns>
-        public static Task<TextResponse> PutToAsync(string endPointPath, 
+        public static IAsyncOperation<TextResponse> PutToAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
             RequestType requestType,
             ResponseType responseType)
         {
-            var body = FormatBody(requestType, parameterInfo);
+            if (!Device.Current.IsRegistered)
+            {
+                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
+            }
 
-            return PutToAsync(endPointPath, body, headerInfo, requestType, responseType);
+            return RequestHttpAsync(HttpMethod.PUT, endPointPath, parameterInfo,
+                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
         
         #region Private Methods

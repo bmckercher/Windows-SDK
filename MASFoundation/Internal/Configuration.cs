@@ -2,37 +2,19 @@
 using System;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Windows.Data.Json;
-using Windows.Storage;
 
 namespace MASFoundation.Internal
 {
     internal class Configuration
     {
-        public Configuration()
-        {
-        }
-
-        public async Task LoadAsync(string fileName)
+        public void Load(string content)
         {
             JsonObject jsonObject = null;
-            string jsonText = null;
 
             try
             {
-                var dataUri = new Uri("ms-appx:///" + fileName, UriKind.Absolute);
-                var file = await StorageFile.GetFileFromApplicationUriAsync(dataUri);
-                jsonText = await FileIO.ReadTextAsync(file);
-            }
-            catch (Exception e)
-            {
-                ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedFileNotFound, e);
-            }
-
-            try
-            {
-                jsonObject = JsonObject.Parse(jsonText);
+                jsonObject = JsonObject.Parse(content);
             }
             catch (Exception e)
             {

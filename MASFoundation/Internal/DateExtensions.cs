@@ -2,7 +2,7 @@
 
 namespace MASFoundation.Internal
 {
-    public static class DateExtensions
+    internal static class DateExtensions
     {
         public static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 

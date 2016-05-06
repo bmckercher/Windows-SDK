@@ -2,6 +2,7 @@
 using MASFoundation.Internal.Data;
 using System;
 using System.Threading.Tasks;
+using Windows.Foundation;
 
 namespace MASFoundation
 {
@@ -12,12 +13,17 @@ namespace MASFoundation
 
             _config = config;
             _device = device;
-            _storage = new SecureStorage(config);
+            _storage = new SecureStorage();
         }
 
         public static User Current { get; private set; }
 
-        public static async Task<User> LoginAsync(string username, string password)
+        public static IAsyncOperation<User> LoginAsync(string username, string password)
+        {
+            return LoginInternalAsync(username, password).AsAsyncOperation<User>();
+        }
+
+        static async Task<User> LoginInternalAsync(string username, string password)
         {
             if (!Device.Current.IsApplicationRegistered)
             {
@@ -26,6 +32,11 @@ namespace MASFoundation
 
             if (!Device.Current.IsRegistered && MAS.RegistrationKind == RegistrationKind.User)
             {
+                if (Current != null)
+                {
+                    await Current.RemoveCacheAsync();
+                }
+
                 await Device.Current.RegisterWithUserAsync(username, password);
             }
 
@@ -61,7 +72,12 @@ namespace MASFoundation
             return user;
         }
 
-        public async Task<IUserInfo> GetInfoAsync()
+        public IAsyncOperation<IUserInfo> GetInfoAsync()
+        {
+            return GetInfoInternalAsync().AsAsyncOperation<IUserInfo>();
+        }
+
+        async Task<IUserInfo> GetInfoInternalAsync()
         {
             if (!Device.Current.IsApplicationRegistered)
             {
@@ -89,7 +105,13 @@ namespace MASFoundation
             }
         }
 
-        public async Task LogoffAsync()
+
+        public IAsyncAction LogoffAsync()
+        {
+            return LogoffInternalAsync().AsAsyncAction();
+        }
+
+        async Task LogoffInternalAsync()
         {
             if (!Device.Current.IsApplicationRegistered)
             {
@@ -113,7 +135,7 @@ namespace MASFoundation
 
         #region Internal Methods
 
-        internal static void ResetAsync()
+        internal static void Reset()
         {
             Current = null;
         }
@@ -247,12 +269,12 @@ namespace MASFoundation
             _refreshToken = data.RefreshToken;
             _expireTimeUtc = DateTime.UtcNow.AddSeconds(data.ExpiresIn);
 
-            await _storage.SetAsync(StorageKeyNames.AccessToken, false, _accessToken);
-            await _storage.SetAsync(StorageKeyNames.AccessTokenExpiration, false, _expireTimeUtc);
+            await _storage.SetAsync(StorageKeyNames.AccessToken, _accessToken);
+            await _storage.SetAsync(StorageKeyNames.AccessTokenExpiration, _expireTimeUtc);
 
             if (_refreshToken != null)
             {
-                await _storage.SetAsync(StorageKeyNames.RefreshToken, false, _refreshToken);
+                await _storage.SetAsync(StorageKeyNames.RefreshToken, _refreshToken);
             }
 
             if (data.IdToken != null && data.IdTokenType != null)
@@ -260,8 +282,8 @@ namespace MASFoundation
                 _idToken = data.IdToken;
                 _idTokenType = data.IdTokenType;
 
-                await _storage.SetAsync(StorageKeyNames.IdToken, true, _idToken);
-                await _storage.SetAsync(StorageKeyNames.IdTokenType, true, _idTokenType);
+                await _storage.SetAsync(StorageKeyNames.IdToken, _idToken);
+                await _storage.SetAsync(StorageKeyNames.IdTokenType, _idTokenType);
             }
         }
 

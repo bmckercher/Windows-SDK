@@ -5,7 +5,7 @@ namespace MASFoundation
     /// <summary>
     /// MAS Exception
     /// </summary>
-    public class MASException : Exception
+    internal class MASException : Exception
     {
         /// <summary>
         /// Constructor for MASException
@@ -16,6 +16,7 @@ namespace MASFoundation
             base(message)
         {
             MASErrorCode = kind;
+            HResult = ToHResult(kind);
         }
 
         /// <summary>
@@ -28,6 +29,7 @@ namespace MASFoundation
             base(message, innerException)
         {
             MASErrorCode = kind;
+            HResult = ToHResult(kind);
         }
 
         /// <summary>
@@ -37,6 +39,11 @@ namespace MASFoundation
         {
             get;
             private set;
+        }
+
+        private int ToHResult(ErrorCode code)
+        {
+            return unchecked((int)0xA0000000 | (int)code);
         }
     
     }

@@ -46,7 +46,7 @@ namespace MagTestApp
             IsBusy = false;
         }
 
-        private async void MAS_LoginRequested(object sender, EventArgs e)
+        private async void MAS_LoginRequested(object sender, object e)
         {
             try
             {

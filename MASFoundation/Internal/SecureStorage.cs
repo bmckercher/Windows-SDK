@@ -1,20 +1,14 @@
-﻿using MASUtility;
-using System;
+﻿using System;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.Storage;
+using Windows.Security.Credentials;
 using Windows.Storage.Streams;
 
 namespace MASFoundation.Internal
 {
     internal class SecureStorage
     {
-        public SecureStorage(Configuration config)
-        {
-            _config = config;
-        }
-
         public async Task<string> GetTextAsync(string key)
         {
             var data = await GetBytesAsync(key);
@@ -38,35 +32,32 @@ namespace MASFoundation.Internal
             return null;
         }
 
-        public Task SetAsync(string key, bool isShared, string text)
+        public Task SetAsync(string key, string text)
         {
-            return SetAsync(key, isShared, Encoding.UTF8.GetBytes(text));
+            return SetAsync(key, Encoding.UTF8.GetBytes(text));
         }
 
-        public Task SetAsync(string key, bool isShared, DateTime date)
+        public Task SetAsync(string key, DateTime date)
         {
-            return SetAsync(key, isShared, BitConverter.GetBytes(date.ToBinary()));
+            return SetAsync(key, BitConverter.GetBytes(date.ToBinary()));
         }
 
-        public async Task<IBuffer> GetIBufferAsync(string key)
+        public Task<IBuffer> GetIBufferAsync(string key)
         {
-            var info = await GetFileAsync(key);
-            if (info != null)
+            return Task.Run<IBuffer>(() =>
             {
                 try
                 {
-                    var stream = await FileIO.ReadBufferAsync(info.File);
-                    var decrypted = await _encryptor.DecryptAsync(stream, GetEntropy(info.IsShared));
-                    return decrypted;
+                    PasswordVault vault = new PasswordVault();
+                    var value = vault.Retrieve("MASFoundation", key);
+
+                    return Convert.FromBase64String(value.Password).AsBuffer();
                 }
                 catch
                 {
+                    return null;
                 }
-
-                return null;
-            }
-
-            return null;
+            });
         }
 
         public async Task<byte[]> GetBytesAsync(string key)
@@ -80,109 +71,73 @@ namespace MASFoundation.Internal
             return null;
         }
 
-        public Task SetAsync(string key, bool isShared, byte[] data)
+        public Task SetAsync(string key, byte[] data)
         {
-            return SetAsync(key, isShared, data.AsBuffer());
+            return SetAsync(key, data.AsBuffer());
         }
 
-        public async Task SetAsync(string key, bool isShared, IBuffer buffer)
+        public Task SetAsync(string key, IBuffer buffer)
         {
-            StorageFile file = null;
-            if (isShared)
+            return Task.Run(() =>
             {
-                var folder = ApplicationData.Current.GetPublisherCacheFolder("keys");
+                PasswordVault vault = new PasswordVault();
+                var bytes = buffer.ToArray();
+
+                var cred = new PasswordCredential()
+                {
+                    Password = Convert.ToBase64String(bytes),
+                    UserName = key,
+                    Resource = "MASFoundation",
+                };
 
                 try
                 {
-                    file = await folder.CreateFileAsync(key, CreationCollisionOption.ReplaceExisting);
+                    vault.Remove(cred);
                 }
                 catch
                 {
                 }
-            }
 
-            if (file == null)
-            {
-                var folder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("keys", CreationCollisionOption.OpenIfExists);
-                file = await folder.CreateFileAsync(key, CreationCollisionOption.ReplaceExisting);
-            }
-
-            var encrypted = await _encryptor.EncryptAsync(buffer, GetEntropy(isShared));
-            await FileIO.WriteBufferAsync(file, encrypted);
+                vault.Add(cred);
+            });
         }
 
-        public static async Task RemoveAsync(string key)
+        public static Task RemoveAsync(string key)
         {
-            var info = await GetFileAsync(key);
-            if (info != null)
+            return Task.Run(() =>
             {
-                await info.File.DeleteAsync(StorageDeleteOption.PermanentDelete);
-            }
-        }
-
-        public static async Task ResetAsync()
-        {
-            try
-            {
-                await ApplicationData.Current.ClearPublisherCacheFolderAsync("keys");
-            }
-            catch
-            {
-            }
-
-            var item = await ApplicationData.Current.LocalFolder.TryGetItemAsync("keys");
-            if (item != null)
-            {
-                await item.DeleteAsync(StorageDeleteOption.PermanentDelete);
-            }
-        }
-
-        async static Task<LoadedFileInfo> GetFileAsync(string key)
-        {
-            bool isShared = true;
-            var folder = ApplicationData.Current.GetPublisherCacheFolder("keys");
-
-            var item = await folder.TryGetItemAsync(key);
-
-            if (item == null)
-            {
-                folder = await ApplicationData.Current.LocalFolder.CreateFolderAsync("keys", CreationCollisionOption.OpenIfExists);
-                item = await folder.TryGetItemAsync(key);
-                isShared = false;
-            }
-
-            if (item != null)
-            {
-                return new LoadedFileInfo()
+                try
                 {
-                    File = (StorageFile)item,
-                    IsShared = isShared
-                };
-            }
-
-            return null;
+                    PasswordVault vault = new PasswordVault();
+                    vault.Remove(new PasswordCredential()
+                    {
+                        UserName = key,
+                        Resource = "MASFoundation",
+                    });
+                }
+                catch
+                {
+                }
+            });
         }
 
-        string GetEntropy(bool isShared)
+        public static Task ResetAsync()
         {
-            if (!isShared)
+            return Task.Run(() =>
             {
-                return _config.DefaultClientId.Id;
-            }
-            else
-            {
-                return _config.OAuth.Client.Organization;
-            }
+                try
+                {
+                    PasswordVault vault = new PasswordVault();
+                    var items = vault.FindAllByResource("MASFoundation");
+                    foreach (var item in items)
+                    {
+                        vault.Remove(item);
+                    }
+                }
+                catch
+                {
+                }
+            });
         }
-
-        Encryptor _encryptor = new Encryptor();
-
-        class LoadedFileInfo
-        {
-            public StorageFile File { get; set; }
-            public bool IsShared { get; set;}
-        }
-
-        Configuration _config;
     }
 }

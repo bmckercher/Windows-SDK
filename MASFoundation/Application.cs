@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace MASFoundation
 {
-    public class Application
+    public sealed class Application
     {
         static Application _current;
         public static Application Current
@@ -24,13 +24,13 @@ namespace MASFoundation
 
         internal event EventHandler<EventArgs> LoginRequested;
 
-        internal async Task StartAsync(string fileName, RegistrationKind regKind)
+        internal async Task StartAsync(string configContent, RegistrationKind regKind)
         {
             Logger.LogInfo("Framework starting...");
 
             // Load and validate configuration data
             var config = new Configuration();
-            await config.LoadAsync(fileName);
+            config.Load(configContent);
             _config = config;
 
             // Load device and any previous registration info.
@@ -76,7 +76,9 @@ namespace MASFoundation
         {
             Logger.LogInfo("Framework reseting...");
 
-            User.ResetAsync();
+            Device.Reset();
+
+            User.Reset();
 
             await SecureStorage.ResetAsync();
 

@@ -1,0 +1,16 @@
+﻿body {
+  /* Uncomment this to enable scrolling and zooming
+  touch-action: manipulation;
+  */
+}
+
+.test-button-container {
+    display: -ms-flexbox
+}
+
+.test-button {
+    width: 100px;
+    height: 100px;
+    vertical-align: top;
+    margin: 4px;
+}

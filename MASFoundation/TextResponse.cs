@@ -5,7 +5,7 @@ namespace MASFoundation
     /// <summary>
     /// Server HTTP response data
     /// </summary>
-    public class TextResponse
+    public sealed class TextResponse
     {
         /// <summary>
         /// Server response headers

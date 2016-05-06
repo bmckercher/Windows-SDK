@@ -6,7 +6,7 @@ namespace MASFoundation
     /// <summary>
     /// MAS configuration exception
     /// </summary>
-    public class MASConfigException : Exception
+    internal class MASConfigException : Exception
     {
         /// <summary>
         /// Constructor for MAS configuration exception
