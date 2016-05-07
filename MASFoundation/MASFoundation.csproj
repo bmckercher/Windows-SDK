@@ -108,7 +108,6 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ILogger.cs" />
     <Compile Include="Internal\ApiErrorCode.cs" />
     <Compile Include="Internal\CertManager.cs" />
     <Compile Include="Internal\Configuration.cs" />
@@ -140,7 +139,7 @@
     <Compile Include="Internal\Http\HttpRequestInfo.cs" />
     <Compile Include="Internal\Http\HttpResponseBaseData.cs" />
     <Compile Include="Internal\Data\Config\ServerConfigData.cs" />
-    <Compile Include="Device.cs" />
+    <Compile Include="MASDevice.cs" />
     <Compile Include="Internal\ErrorFactory.cs" />
     <Compile Include="ErrorCode.cs" />
     <Compile Include="Internal\Http\HttpContentTypes.cs" />
@@ -156,17 +155,17 @@
     <Compile Include="Internal\StorageKeyNames.cs" />
     <Compile Include="IUserInfo.cs" />
     <Compile Include="LogLevel.cs" />
-    <Compile Include="MASConfigException.cs" />
+    <Compile Include="Internal\MASConfigException.cs" />
     <Compile Include="IAddressInfo.cs" />
     <Compile Include="RegistrationKind.cs" />
     <Compile Include="Internal\ScopeNames.cs" />
-    <Compile Include="Application.cs" />
+    <Compile Include="MASApplication.cs" />
     <Compile Include="Internal\SecureStorage.cs" />
     <Compile Include="Internal\HttpRequestFactory.cs" />
     <Compile Include="Internal\StringExtensions.cs" />
-    <Compile Include="User.cs" />
+    <Compile Include="MASUser.cs" />
     <Compile Include="MAS.cs" />
-    <Compile Include="MASException.cs" />
+    <Compile Include="Internal\MASException.cs" />
     <Compile Include="RequestType.cs" />
     <Compile Include="TextResponse.cs" />
     <Compile Include="ResponseType.cs" />

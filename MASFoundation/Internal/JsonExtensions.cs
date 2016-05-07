@@ -9,7 +9,10 @@ namespace MASFoundation.Internal
             IJsonValue value;
             if (obj.TryGetValue(key, out value))
             {
-                return value.GetString();
+                if (value.ValueType == JsonValueType.String)
+                {
+                    return value.GetString();
+                }
             }
 
             return null;

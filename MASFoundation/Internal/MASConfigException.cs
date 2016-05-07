@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace MASFoundation
+namespace MASFoundation.Internal
 {
     /// <summary>
     /// MAS configuration exception

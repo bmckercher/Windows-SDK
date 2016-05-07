@@ -11,82 +11,125 @@
 
             window.onload = function (e) {
 
-                self._addClickHandler("start-button", "start", function() {
-                    MASFoundation.MAS.startAsync().done(function () {
-                        console.log("Started!");
-                    }, function (error) {
-                        console.error("Start failed!");
+                self._debugText = document.querySelector(".debug-text-area");
+
+                self._addClickHandler("start-button", "start", function () {
+
+                    var storage = Windows.Storage;
+
+                    var configFileLoadPromise = storage.StorageFile.getFileFromApplicationUriAsync(new Windows.Foundation.Uri("ms-appx:///my_msso_config.json")).
+                        then(function (file) {
+                            return storage.FileIO.readTextAsync(file);
+                        });
+
+                    configFileLoadPromise.done(function (configContent) {
+                        MASFoundation.MAS.startWithConfigAsync(configContent).done(function () {
+                            self._onLogMessage("Started!");
+                        }, function (error) {
+                            self._onLogMessage("Start failed! " + error.message);
+                        });
                     });
+
                 });
 
                 self._addClickHandler("login-button", "login", function() {
-                    MASFoundation.User.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
-                        console.log("User logged in!");
+                    MASFoundation.MASUser.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
+                        self._onLogMessage("User logged in!");
                     }, function (error) {
-                        console.log("User login failed!");
+                        self._onLogMessage("User login failed! " + error.message);
                     });
                 });
 
                 self._addClickHandler("unregister-button", "unregister", function () {
-                    if (MASFoundation.Device.current) {
-                        MASFoundation.Device.current.unregisterAsync().done(function () {
-                            console.log("Device unregistered!");
+                    if (MASFoundation.MASDevice.current) {
+                        MASFoundation.MASDevice.current.unregisterAsync().done(function () {
+                            self._onLogMessage("Device unregistered!");
                         }, function (error) {
-                            console.log("Device unregister failed!");
+                            self._onLogMessage("Device unregister failed! " + error.message);
                         });
                     }
                     else {
-                        console.log("Device not registered!");
+                        self._onLogMessage("Device not registered!");
                     }
                 });
 
                 self._addClickHandler("device-logout-button", "logout", function () {
 
-                    if (MASFoundation.Device.current) {
-                        MASFoundation.Device.current.logoutAsync().done(function () {
-                            console.log("Device logged out!");
+                    if (MASFoundation.MASDevice.current) {
+                        MASFoundation.MASDevice.current.logoutAsync().done(function () {
+                            self._onLogMessage("Device logged out!");
                         }, function (error) {
-                            console.log("Device logged out failed!");
+                            self._onLogMessage("Device logged out failed! " + error.message);
                         });
                     }
                     else {
-                        console.log("Device not registered!");
+                        self._onLogMessage("Device not registered!");
                     }
                 });
 
                 self._addClickHandler("user-logoff-button", "logoff", function () {
 
-                    if (MASFoundation.User.current) {
-                        MASFoundation.User.current.logoffAsync().done(function () {
-                            console.log("User logged off!");
+                    if (MASFoundation.MASUser.current) {
+                        MASFoundation.MASUser.current.logoffAsync().done(function () {
+                            self._onLogMessage("User logged off!");
                         }, function (error) {
-                            console.log("User logged off failed!");
+                            self._onLogMessage("User logged off failed! " + error.message);
                         });
                     }
                     else {
-                        console.log("No current user!");
+                        self._onLogMessage("No current user!");
                     }
                 });
 
                 self._addClickHandler("user-info-button", "userinfo", function () {
-                    if (MASFoundation.User.current) {
-                        MASFoundation.User.current.getInfoAsync().done(function (info) {
-                            console.log("User info returned!");
+                    if (MASFoundation.MASUser.current) {
+                        MASFoundation.MASUser.current.getInfoAsync().done(function (info) {
+                            self._onLogMessage("User info returned!");
                         }, function (error) {
-                            console.log("User info failed!");
+                            self._onLogMessage("User info failed! " + error.message);
                         });
                     }
                     else {
-                        console.log("No current user!");
+                        self._onLogMessage("No current user!");
                     }
                 });
 
                 self._addClickHandler("reset-button", "reset", function () {
                     MASFoundation.MAS.resetAsync().done(function (info) {
-                        console.log("MAS reset!");
+                        self._onLogMessage("MAS reset!")
                     }, function (error) {
-                        console.log("MAS reset failed!");
+                        console.error("MAS reset failed! " + error.message);
                     });
+                });
+
+                self._addClickHandler("postcode-1-button", "postcode1", function () {
+                    var code = "DM001PL";
+                    MASFoundation.MAS.getFromAsync("https://test.pulsenow.co.uk/mobile/customerinfo/v2/postcode/" + code,
+                        null, null, MASFoundation.ResponseType.json).then(function (result) {
+                            self._onLogMessage("Got postcode")
+                        }, function (error) {
+                            self._onLogMessage("Got postcode failed! " + error.message)
+                        });
+                });
+
+                self._addClickHandler("postcode-2-button", "postcode2", function () {
+                    var code = "DM002PL";
+                    MASFoundation.MAS.getFromAsync("https://test.pulsenow.co.uk/mobile/customerinfo/v2/postcode/" + code,
+                        null, null, MASFoundation.ResponseType.json).then(function (result) {
+                            self._onLogMessage("Got postcode")
+                        }, function (error) {
+                            self._onLogMessage("Got postcode failed! " + error.message)
+                        });
+                });
+
+                self._addClickHandler("postcode-3-button", "postcode3", function () {
+                    var code = "DM003PL";
+                    MASFoundation.MAS.getFromAsync("https://test.pulsenow.co.uk/mobile/customerinfo/v2/postcode/" + code,
+                        null, null, MASFoundation.ResponseType.json).then(function (result) {
+                            self._onLogMessage("Got postcode")
+                        }, function (error) {
+                            self._onLogMessage("Got postcode failed! " + error.message)
+                        });
                 });
 
                 self._onLoginRequestedBind = self._onLoginRequested.bind(self);
@@ -108,14 +151,15 @@
 
         _onLoginRequested: function () {
             MASFoundation.User.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
-                console.log("User logged in!");
+                self._onLogMessage("User logged in!");
             }, function (error) {
-                console.log("User login failed!");
+                self._onLogMessage("User login failed!");
             });
         },
 
         _onLogMessage: function (message) {
-            console.info(message.toString());
+            this._debugText.textContent += message + "\n";
+            this._debugText.scrollTop = this._debugText.scrollHeight;
         }
     };
 

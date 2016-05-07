@@ -12,15 +12,15 @@ namespace MagTestApp
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page, ILogger
+    public sealed partial class MainPage : Page
     {
         public MainPage()
         {
             this.InitializeComponent();
 
-            MAS.Logger = this;
             MAS.LogLevel = LogLevel.Full;
             MAS.LoginRequested += MAS_LoginRequested;
+            MAS.LogMessage += MAS_LogMessage;
 
             // British Gas test configuration only supports user device registration
             MAS.ConfigFileName = "msso_config.json";
@@ -29,6 +29,17 @@ namespace MagTestApp
 
             BritishGasTestConfigBtn.Checked += BritishGasTestConfigBtn_Checked;
             CATestConfigBtn.Checked += CATestConfigBtn_Checked;
+        }
+
+        private void MAS_LogMessage(object sender, string e)
+        {
+            LogMessage(e);
+        }
+
+        void LogMessage(string message)
+        {
+            DebugInfo.Text += message + System.Environment.NewLine;
+            ScrollToBottom();
         }
 
         private async void StartBtn_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -41,7 +52,7 @@ namespace MagTestApp
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("Start failed " + exp.ToString());
+                LogMessage("Start failed " + exp.ToString());
             }
             IsBusy = false;
         }
@@ -50,11 +61,11 @@ namespace MagTestApp
         {
             try
             {
-                var user = await User.LoginAsync("winsdktest2", "P@$$w0rd01");
+                var user = await MASUser.LoginAsync("winsdktest2", "P@$$w0rd01");
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("Login failed " + exp.ToString());
+                LogMessage("Login failed " + exp.ToString());
             }
         }
 
@@ -63,11 +74,11 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await User.LoginAsync("winsdktest2", "P@$$w0rd01");
+                await MASUser.LoginAsync("winsdktest2", "P@$$w0rd01");
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("Login failed " + exp.ToString());
+                LogMessage("Login failed " + exp.ToString());
             }
 
             IsBusy = false;
@@ -78,11 +89,11 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await Device.Current.UnregisterAsync();
+                await MASDevice.Current.UnregisterAsync();
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("Unregister failed " + exp.ToString());
+                LogMessage("Unregister failed " + exp.ToString());
             }
 
             IsBusy = false;
@@ -93,11 +104,11 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                await Device.Current.LogoutAsync(true);
+                await MASDevice.Current.LogoutAsync(true);
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("Logout device failed " + exp.ToString());
+                LogMessage("Logout device failed " + exp.ToString());
             }
 
             IsBusy = false;
@@ -108,18 +119,18 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                if (User.Current != null)
+                if (MASUser.Current != null)
                 {
-                    await User.Current.LogoffAsync();
+                    await MASUser.Current.LogoffAsync();
                 }
                 else
                 {
-                    ((ILogger)this).Info("No current user!");
+                    LogMessage("No current user!");
                 }
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("LogoffUser failed " + exp.ToString());
+                LogMessage("LogoffUser failed " + exp.ToString());
             }
             IsBusy = false;
         }
@@ -141,18 +152,18 @@ namespace MagTestApp
             IsBusy = true;
             try
             {
-                if (User.Current != null)
+                if (MASUser.Current != null)
                 {
-                    await User.Current.GetInfoAsync();
+                    await MASUser.Current.GetInfoAsync();
                 }
                 else
                 {
-                    ((ILogger)this).Info("No current user!");
+                    LogMessage("No current user!");
                 }
             }
             catch (Exception exp)
             {
-                ((ILogger)this).Error("GetUserInfo failed " + exp.ToString());
+                LogMessage("GetUserInfo failed " + exp.ToString());
             }
             IsBusy = false;
         }
@@ -162,24 +173,6 @@ namespace MagTestApp
             IsBusy = true;
             await MAS.ResetAsync();
             IsBusy = false;
-        }
-
-        void ILogger.Info(string message)
-        {
-            DebugInfo.Text += "Info: " + message + System.Environment.NewLine;
-            ScrollToBottom();
-        }
-
-        void ILogger.Warn(string message)
-        {
-            DebugInfo.Text += "Warn: " + message + System.Environment.NewLine;
-            ScrollToBottom();
-        }
-
-        void ILogger.Error(string message)
-        {
-            DebugInfo.Text += "Error: " + message + System.Environment.NewLine;
-            ScrollToBottom();
         }
 
         void ScrollToBottom()

@@ -18,9 +18,16 @@ namespace MASFoundation.Internal.Data
             {
                 DeviceIdentifier = deviceId;
             }
+
+            string deviceStatus;
+            if (response.Headers.TryGetValue("device-status", out deviceStatus))
+            {
+                DeviceStatus = deviceStatus;
+            }
         }
 
         public string Certificate { get; private set; }
         public string DeviceIdentifier { get; private set; }
+        public string DeviceStatus { get; private set; }
     }
 }

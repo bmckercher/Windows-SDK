@@ -56,7 +56,7 @@ namespace MASFoundation.Internal
             trustedStore.Add(cert);
         }
 
-        public async Task<string> GenerateCSRAsync(Configuration config, Device device, string username)
+        public async Task<string> GenerateCSRAsync(Configuration config, MASDevice device, string username)
         {
             #region Bouncy castle CSR generation
             //X509Name subject = new X509Name(string.Format("cn={0}, ou={1}, dc={2}, o={3}", username, device.Id, device.Name, config.OAuth.Client.Organization));

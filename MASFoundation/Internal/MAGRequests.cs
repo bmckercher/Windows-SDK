@@ -38,7 +38,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task<AuthorizationProvidersResponseData> GetAuthorizationProviders(Configuration config, Device device)
+        public static async Task<AuthorizationProvidersResponseData> GetAuthorizationProviders(Configuration config, MASDevice device)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.Authorization);
 
@@ -64,7 +64,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task<RegisterResponseData> RegisterDeviceAsync(Configuration config, Device device, string csr)
+        public static async Task<RegisterResponseData> RegisterDeviceAsync(Configuration config, MASDevice device, string csr)
         {
             var url = config.GetEndpointPath(config.Mag.SystemEndpoints.DeviceClientRegister);
 
@@ -87,7 +87,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task<RegisterResponseData> RegisterDeviceForUserAsync(Configuration config, Device device, string username, string password, string csr)
+        public static async Task<RegisterResponseData> RegisterDeviceForUserAsync(Configuration config, MASDevice device, string username, string password, string csr)
         {
             var url = config.GetEndpointPath(config.Mag.SystemEndpoints.DeviceRegister);
 
@@ -112,7 +112,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static Task<UnregisterResponseData> UnregisterDevice(Configuration config, Device device)
+        public static Task<UnregisterResponseData> UnregisterDevice(Configuration config, MASDevice device)
         {
             var url = config.GetEndpointPath(config.Mag.SystemEndpoints.DeviceRemove);
 
@@ -124,7 +124,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task RevokeAccessTokenAsync(Configuration config, Device device, User user)
+        public static async Task RevokeAccessTokenAsync(Configuration config, MASDevice device, MASUser user)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.TokenRevocation);
 
@@ -148,7 +148,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task LogoutSessionAsync(Configuration config, Device device, User user, bool logoutApps)
+        public static async Task LogoutSessionAsync(Configuration config, MASDevice device, MASUser user, bool logoutApps)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.UserSessionLogout);
 
@@ -176,7 +176,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static Task<RequestTokenResponseData> RequestAccessTokenAsync(Configuration config, Device device, string username, string password)
+        public static Task<RequestTokenResponseData> RequestAccessTokenAsync(Configuration config, MASDevice device, string username, string password)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.Token);
 
@@ -205,7 +205,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static Task<RequestTokenResponseData> RequestAccessTokenFromIdTokenAsync(Configuration config, Device device, string idToken, string idTokenType)
+        public static Task<RequestTokenResponseData> RequestAccessTokenFromIdTokenAsync(Configuration config, MASDevice device, string idToken, string idTokenType)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.Token);
             
@@ -233,7 +233,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static Task<RequestTokenResponseData> RequestAccessTokenAnonymouslyAsync(Configuration config, Device device)
+        public static Task<RequestTokenResponseData> RequestAccessTokenAnonymouslyAsync(Configuration config, MASDevice device)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.Token);
 
@@ -262,7 +262,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static Task<RequestTokenResponseData> RefreshAccessTokenAsync(Configuration config, Device device, string refreshToken)
+        public static Task<RequestTokenResponseData> RefreshAccessTokenAsync(Configuration config, MASDevice device, string refreshToken)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.Token);
             var headers = new Dictionary<string, string>
@@ -289,7 +289,7 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task<UserInfoResponseData> GetUserInfoAsync(Configuration config, Device device, User user)
+        public static async Task<UserInfoResponseData> GetUserInfoAsync(Configuration config, MASDevice device, MASUser user)
         {
             var url = config.GetEndpointPath(config.OAuth.ProjectedEndpoints.UserInfo);
 
