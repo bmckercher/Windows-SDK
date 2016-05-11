@@ -220,8 +220,8 @@ namespace MASFoundation
 
         async Task LoadAsync()
         {
-            var serverCert = _config.Server.ServerCerts[0];
-            await _certManager.InstallTrustedServerCert(serverCert);
+            //var serverCert = _config.Server.ServerCerts[0];
+            //await _certManager.InstallTrustedServerCert(serverCert);
 
             var clientInfo = await _storage.GetTextAsync(StorageKeyNames.ClientInfo);
             string clientId = null;
