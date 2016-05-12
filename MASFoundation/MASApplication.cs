@@ -5,9 +5,15 @@ using System.Threading.Tasks;
 
 namespace MASFoundation
 {
+    /// <summary>
+    /// Local representation of application data.
+    /// </summary>
     public sealed class MASApplication
     {
         static MASApplication _current;
+        /// <summary>
+        /// The one and only MASApplication instance
+        /// </summary>
         public static MASApplication Current
         {
             get
@@ -18,6 +24,18 @@ namespace MASFoundation
                 }
 
                 return _current;
+            }
+        }
+
+        /// <summary>
+        /// Is the application registered.  If true, we have client credentials.
+        /// </summary>
+        public static bool IsRegistered
+        {
+            get
+            {
+                var currentDevice = MASDevice.Current;
+                return currentDevice != null && currentDevice.ClientId != null && currentDevice.ClientSecret != null;
             }
         }
 

@@ -50,7 +50,7 @@ namespace MASFoundation.Internal
         public async Task InstallTrustedServerCert(string certText)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            var cert = new Certificate(certText.ToUTF8Bytes().AsBuffer());
+            var cert = new Certificate(certText.ToBytes().AsBuffer());
 
             var trustedStore = CertificateStores.TrustedRootCertificationAuthorities;
             trustedStore.Add(cert);

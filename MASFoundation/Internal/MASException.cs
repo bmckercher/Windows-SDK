@@ -3,7 +3,9 @@
 namespace MASFoundation.Internal
 {
     /// <summary>
-    /// MAS Exception
+    /// MAS Exception - this is marked as internal because of a limitation with Windows Runtime component:
+    /// no public custom exceptions.  However we want an internal exception so we can set the HResult 
+    /// code.  HResult code is exposed as number in javascript exception.
     /// </summary>
     internal class MASException : Exception
     {
@@ -16,7 +18,7 @@ namespace MASFoundation.Internal
             base(message)
         {
             MASErrorCode = kind;
-            HResult = ToHResult(kind);
+            HResult = kind.ToHResult();
         }
 
         /// <summary>
@@ -29,7 +31,7 @@ namespace MASFoundation.Internal
             base(message, innerException)
         {
             MASErrorCode = kind;
-            HResult = ToHResult(kind);
+            HResult = kind.ToHResult();
         }
 
         /// <summary>
@@ -40,11 +42,5 @@ namespace MASFoundation.Internal
             get;
             private set;
         }
-
-        private int ToHResult(ErrorCode code)
-        {
-            return unchecked((int)0xA0000000 | (int)code);
-        }
-    
     }
 }

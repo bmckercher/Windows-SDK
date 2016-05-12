@@ -26,6 +26,7 @@
                         MASFoundation.MAS.startWithConfigAsync(configContent).done(function () {
                             self._onLogMessage("Started!");
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("Start failed! " + error.message);
                         });
                     });
@@ -36,6 +37,7 @@
                     MASFoundation.MASUser.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
                         self._onLogMessage("User logged in!");
                     }, function (error) {
+                        var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                         self._onLogMessage("User login failed! " + error.message);
                     });
                 });
@@ -45,6 +47,7 @@
                         MASFoundation.MASDevice.current.unregisterAsync().done(function () {
                             self._onLogMessage("Device unregistered!");
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("Device unregister failed! " + error.message);
                         });
                     }
@@ -59,6 +62,7 @@
                         MASFoundation.MASDevice.current.logoutAsync().done(function () {
                             self._onLogMessage("Device logged out!");
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("Device logged out failed! " + error.message);
                         });
                     }
@@ -73,6 +77,7 @@
                         MASFoundation.MASUser.current.logoffAsync().done(function () {
                             self._onLogMessage("User logged off!");
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("User logged off failed! " + error.message);
                         });
                     }
@@ -86,6 +91,7 @@
                         MASFoundation.MASUser.current.getInfoAsync().done(function (info) {
                             self._onLogMessage("User info returned!");
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("User info failed! " + error.message);
                         });
                     }
@@ -98,6 +104,7 @@
                     MASFoundation.MAS.resetAsync().done(function (info) {
                         self._onLogMessage("MAS reset!")
                     }, function (error) {
+                        var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                         console.error("MAS reset failed! " + error.message);
                     });
                 });
@@ -108,6 +115,7 @@
                         null, null, MASFoundation.ResponseType.json).then(function (result) {
                             self._onLogMessage("Got postcode")
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("Got postcode failed! " + error.message)
                         });
                 });
@@ -118,6 +126,7 @@
                         null, null, MASFoundation.ResponseType.json).then(function (result) {
                             self._onLogMessage("Got postcode")
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("Got postcode failed! " + error.message)
                         });
                 });
@@ -128,6 +137,7 @@
                         null, null, MASFoundation.ResponseType.json).then(function (result) {
                             self._onLogMessage("Got postcode")
                         }, function (error) {
+                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
                             self._onLogMessage("Got postcode failed! " + error.message)
                         });
                 });

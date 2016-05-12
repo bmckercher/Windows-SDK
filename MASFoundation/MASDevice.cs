@@ -9,6 +9,9 @@ using Windows.Security.ExchangeActiveSyncProvisioning;
 
 namespace MASFoundation
 {
+    /// <summary>
+    /// Local representation of device data.
+    /// </summary>
     public class MASDevice
     {
         internal MASDevice(Configuration config)
@@ -20,8 +23,14 @@ namespace MASFoundation
 
         #region Public Properties
 
+        /// <summary>
+        /// The device the application is running on. This is a singleton object.
+        /// </summary>
         public static MASDevice Current { get; private set; }
 
+        /// <summary>
+        /// Device identifier
+        /// </summary>
         public string Id
         {
             get
@@ -30,6 +39,9 @@ namespace MASFoundation
             }
         }
 
+        /// <summary>
+        /// Device name
+        /// </summary>
         public string Name
         {
             get
@@ -37,7 +49,10 @@ namespace MASFoundation
                 return _deviceInfo.FriendlyName;
             }
         }
-    
+
+        /// <summary>
+        /// Is the MASDevice registered.
+        /// </summary>
         public bool IsRegistered
         {
             get
@@ -46,35 +61,36 @@ namespace MASFoundation
             }
         }
 
-        public bool IsApplicationRegistered
-        {
-            get
-            {
-                return ClientId != null && ClientSecret != null;
-            }
-        }
-
+        /// <summary>
+        /// The MASDevice status.
+        /// </summary>
         public string Status { get; private set; }
 
         #endregion
 
         #region Public Methods
 
-        public IAsyncAction RegisterWithClientAsync()
-        {
-            return RegisterWithClientInternalAsync().AsAsyncAction();
-        }
-
-        public IAsyncAction RegisterWithUserAsync(string username, string password)
-        {
-            return RegisterWithUserInternalAsync(username, password).AsAsyncAction();
-        }
-
+        /// <summary>
+        /// Deregister the application resources on this device. This is a two step operation.
+        /// 
+        /// It will first attempt to remove the device's registered record in the cloud.  If it fails,
+        /// an error is returned and the appropriate notification is sent and it will stop there.
+        /// 
+        /// Upon success of the first operation, deregistration in the cloud, it will then attempt to
+        /// wipe the device of all credential settings.  If it fails, an error is returned and the appropriate
+        /// notification is sent.It will stop here.
+        /// </summary>
         public IAsyncAction UnregisterAsync()
         {
             return UnregisterInternalAsync().AsAsyncAction();
         }
 
+        /// <summary>
+        /// Logout the device from the server.This will revoke the id_token from the server and local by calling log out endpoint
+        /// If clearLocal is defined as true, as part of log out process (revoking id_token),
+        /// this method will also clear access_token, and refresh_token that are stored in local.
+        /// </summary>
+        /// <param name="clearLocal">Boolean to indicate to clear local access_token and refresh_token or not.</param>
         public IAsyncAction LogoutAsync(bool clearLocal)
         {
             return LogoutInternalAsync(clearLocal).AsAsyncAction();
@@ -127,7 +143,7 @@ namespace MASFoundation
 
         #region Private Methods
 
-        async Task RegisterWithClientInternalAsync()
+        internal async Task RegisterWithClientAsync()
         {
             var username = "clientName";
             var csr = await _certManager.GenerateCSRAsync(_config, this, username);
@@ -137,7 +153,7 @@ namespace MASFoundation
             await FinalizeRegistrationAsync(response, username);
         }
 
-        async Task RegisterWithUserInternalAsync(string username, string password)
+        internal async Task RegisterWithUserAsync(string username, string password)
         {
             var csr = await _certManager.GenerateCSRAsync(_config, this, username);
 
@@ -148,7 +164,7 @@ namespace MASFoundation
 
         async Task UnregisterInternalAsync()
         {
-            if (!IsApplicationRegistered)
+            if (!MASApplication.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
@@ -179,7 +195,7 @@ namespace MASFoundation
 
         async Task LogoutInternalAsync(bool clearLocal)
         {
-            if (!IsApplicationRegistered)
+            if (!MASApplication.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }

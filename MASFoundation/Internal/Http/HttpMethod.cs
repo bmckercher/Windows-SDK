@@ -1,6 +1,6 @@
 ﻿namespace MASFoundation.Internal.Http
 {
-    public enum HttpMethod
+    internal enum HttpMethod
     {
         GET,
         POST,

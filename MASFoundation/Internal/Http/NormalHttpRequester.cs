@@ -36,7 +36,7 @@ namespace MASFoundation.Internal.Http
             }
             else if (requestInfo.Method == HttpMethod.POST || requestInfo.Method == HttpMethod.PUT)
             {
-                var content = new ByteArrayContent((requestInfo.Body ?? string.Empty).ToUTF8Bytes());
+                var content = new ByteArrayContent((requestInfo.Body ?? string.Empty).ToBytes());
 
                 if (requestInfo.Headers != null)
                 {

@@ -3,6 +3,7 @@ using MASFoundation.Internal.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -10,6 +11,11 @@ using Windows.Storage;
 
 namespace MASFoundation
 {
+    /// <summary>
+    /// The top level MAS object represents the Mobile App Services SDK in it's entirety.  It 
+    /// is where the framework lifecycle begins.  It is the front facing class where many of the 
+    /// configuration settings for the SDK as a whole can be found and utilized.
+    /// </summary>
     public static class MAS
     {
         static MAS()
@@ -63,7 +69,9 @@ namespace MASFoundation
         /// <summary>
         /// Starts the lifecycle of the MAS processes.  This includes the registration of the application to the Gateway, if the network is available.
         /// </summary>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">
+        /// Throws when configuration file is not found, could not be parsed, or does not include the required information.
+        /// </exception>
         public static IAsyncAction StartAsync()
         {
             return StartInternalAsync(null).AsAsyncAction();
@@ -73,7 +81,9 @@ namespace MASFoundation
         /// Starts the lifecycle of the MAS processes.  This includes the registration of the application to the Gateway, if the network is available.
         /// </summary>
         /// <param name="configText">The contents of the configuration file as an alternative to ConfigFileName.</param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">
+        /// Throws when configuration file contents could not be parsed or does not include the required information.
+        /// </exception>
         public static IAsyncAction StartWithConfigAsync(string configText)
         {
             return StartInternalAsync(configText).AsAsyncAction();
@@ -82,10 +92,32 @@ namespace MASFoundation
         /// <summary>
         /// Reset all application, device, and user credentials in memory, or in the local and shared storage.
         /// </summary>
-        /// <returns></returns>
         public static IAsyncAction ResetAsync()
         {
             return MASApplication.Current.ResetAsync().AsAsyncAction();
+        }
+
+        /// <summary>
+        /// Looks up error string from given error number (or HRESULT)
+        /// </summary>
+        /// <param name="number">Error number or HRESULT</param>
+        /// <returns>Error string or unknown string if not found</returns>
+        public static ErrorInfo ErrorLookup(int number)
+        {
+            var code = number.FromHResult();
+
+            string text;
+            if (code != ErrorCode.Unknown)
+            {
+                text = code.ToErrorString();
+            }
+            else
+            {
+                var exception = Marshal.GetExceptionForHR(number);
+                text = exception.Message;
+            }
+
+            return new ErrorInfo(code, text);
         }
 
         /// <summary>
@@ -95,7 +127,8 @@ namespace MASFoundation
         /// <param name="parameterInfo"></param>
         /// <param name="headerInfo"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> DeleteFromAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
@@ -112,7 +145,8 @@ namespace MASFoundation
         /// <param name="parameterInfo"></param>
         /// <param name="headerInfo"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> GetFromAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
@@ -130,7 +164,8 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         [DefaultOverload]
         public static IAsyncOperation<TextResponse> PostToAsync(string endPointPath,
             string body,
@@ -155,7 +190,8 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> PostToAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
@@ -174,7 +210,8 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         [DefaultOverload]
         public static IAsyncOperation<TextResponse> PatchToAsync(string endPointPath,
             string body,
@@ -199,7 +236,8 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> PatchToAsync(string endPointPath,
             IDictionary<string, string> parameterInfo,
             IDictionary<string, string> headerInfo,
@@ -218,7 +256,8 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         [DefaultOverload]
         public static IAsyncOperation<TextResponse> PutToAsync(string endPointPath,
             string body,
@@ -243,7 +282,8 @@ namespace MASFoundation
         /// <param name="headerInfo"></param>
         /// <param name="requestType"></param>
         /// <param name="responseType"></param>
-        /// <returns></returns>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> PutToAsync(string endPointPath, 
             IDictionary<string, string> parameterInfo, 
             IDictionary<string, string> headerInfo,
@@ -298,7 +338,7 @@ namespace MASFoundation
             RequestType requestType,
             ResponseType responseType)
         {
-            if (MASDevice.Current == null || !MASDevice.Current.IsApplicationRegistered)
+            if (!MASApplication.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }

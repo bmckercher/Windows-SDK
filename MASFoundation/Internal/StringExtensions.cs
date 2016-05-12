@@ -16,7 +16,7 @@ namespace MASFoundation.Internal
             return Encoding.UTF8.GetString(converted);
         }
 
-        public static byte[] ToUTF8Bytes(this string text)
+        public static byte[] ToBytes(this string text)
         {
             return Encoding.UTF8.GetBytes(text);
         }

@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MASFoundation", "MASFoundat
 EndProject
 Project("{262852C6-CD72-467D-83FE-5EEB1973A190}") = "MagTestJSApp", "MagTestJSApp\MagTestJSApp.jsproj", "{2004CCB2-9B99-4E33-9C18-BC5EF569C245}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doxygen", "doxygen", "{AE84E951-88FE-435C-A318-31E5CBB3D5AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

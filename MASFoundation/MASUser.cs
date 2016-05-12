@@ -7,6 +7,9 @@ using Windows.Foundation;
 
 namespace MASFoundation
 {
+    /// <summary>
+    /// Local representation of user data.
+    /// </summary>
     public class MASUser
     {
         internal MASUser(Configuration config, MASDevice device)
@@ -19,8 +22,14 @@ namespace MASFoundation
 
         #region Public Properties
 
+        /// <summary>
+        ///  The authenticated user for the application, if any. Null returned if none.  This is a singleton object.
+        /// </summary>
         public static MASUser Current { get; private set; }
 
+        /// <summary>
+        /// Is this user logged in.
+        /// </summary>
         public bool IsLoggedIn
         {
             get
@@ -29,20 +38,35 @@ namespace MASFoundation
             }
         }
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Logoff an already authenticated user via asynchronous request.
+        /// </summary>
         public IAsyncAction LogoffAsync()
         {
             return LogoffInternalAsync().AsAsyncAction();
         }
 
-        #endregion
-
-        #region Public Methods
-
+        /// <summary>
+        /// Authenticate a user via asynchronous request with basic credentials.
+        /// 
+        /// This will set MASUser.Current upon a successful result.  
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="password">The password of the user.</param>
         public static IAsyncOperation<MASUser> LoginAsync(string username, string password)
         {
             return LoginInternalAsync(username, password).AsAsyncOperation<MASUser>();
         }
 
+        /// <summary>
+        /// Requesting user information for the MASUser object.
+        /// This method will retrieve additional information on the MASUser object.
+        /// </summary>
+        /// <returns>User information</returns>
         public IAsyncOperation<IUserInfo> GetInfoAsync()
         {
             return GetInfoInternalAsync().AsAsyncOperation<IUserInfo>();
@@ -160,7 +184,7 @@ namespace MASFoundation
 
         static async Task<MASUser> LoginInternalAsync(string username, string password)
         {
-            if (!MASDevice.Current.IsApplicationRegistered)
+            if (!MASApplication.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
@@ -209,7 +233,7 @@ namespace MASFoundation
 
         async Task<IUserInfo> GetInfoInternalAsync()
         {
-            if (!MASDevice.Current.IsApplicationRegistered)
+            if (!MASApplication.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
@@ -229,7 +253,7 @@ namespace MASFoundation
 
         async Task LogoffInternalAsync()
         {
-            if (!MASDevice.Current.IsApplicationRegistered)
+            if (!MASApplication.IsRegistered)
             {
                 ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
             }
