@@ -1,3 +1,5 @@
+### Starting SDK ###
+
 We should always start the SDK with [MAS.StartAsync](@ref MASFoundation::MAS::StartAsync) or [MAS.StartWithConfigAsync](@ref MASFoundation::MAS::StartWithConfigAsync).  This will load the configuration file and attempt to do device registration if it hasn't been done already.
 
 The `StartAsync` must be used with a msso_config.json file with the file name specified in property [MAS.ConfigFileName](@ref MASFoundation::MAS::ConfigFileName).  `StartWithConfigAsync` is just like `StartAsync` but allows the caller to pass in the contents of the configuration file instead.
