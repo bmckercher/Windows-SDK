@@ -38,10 +38,10 @@ catch (Exception exp)
 ### After succesful registration ###
 
 After succesful registration, applications can:
-	+ Access the current user and device.  [MASUser.Current](@ref MASFoundation::MASUser::Current) and [MASDevice.Current](@ref MASFoundation::MASDevice::Current).
-	+ Make authenticated network requests with [MAS.GetFromAsync](@ref MASFoundation::MAS::GetFromAsync), [MAS.DeleteFromAsync](@ref MASFoundation::MAS::DeleteFromAsync), [MAS.PostToAsync](@ref MASFoundation::MAS::PostToAsync), [MAS.PutToAsync](@ref MASFoundation::MAS::PutToAsync), and [MAS.PatchToAsync](@ref MASFoundation::MAS::PatchToAsync)
-	+ Logout and unregister the device.  [MASDevice.Current.LogoutAsync](@ref MASFoundation::MASDevice::LogoutAsync) and [MASDevice.Current.LogoutAsync](@ref MASFoundation::MASDevice::UnregisterAsync)
-	+ Get user information and logoff the user.  [MASUser.Current.GetInfoAsync](@ref MASFoundation::MASUser::GetInfoAsync) and [MASUser.Current.LogoffAsync](@ref MASFoundation::MASUser::LogoffAsync)
+	* Access the current user and device.  [MASUser.Current](@ref MASFoundation::MASUser::Current) and [MASDevice.Current](@ref MASFoundation::MASDevice::Current).
+	* Make authenticated network requests with [MAS.GetFromAsync](@ref MASFoundation::MAS::GetFromAsync), [MAS.DeleteFromAsync](@ref MASFoundation::MAS::DeleteFromAsync), [MAS.PostToAsync](@ref MASFoundation::MAS::PostToAsync), [MAS.PutToAsync](@ref MASFoundation::MAS::PutToAsync), and [MAS.PatchToAsync](@ref MASFoundation::MAS::PatchToAsync)
+	* Logout and unregister the device.  [MASDevice.Current.LogoutAsync](@ref MASFoundation::MASDevice::LogoutAsync) and [MASDevice.Current.LogoutAsync](@ref MASFoundation::MASDevice::UnregisterAsync)
+	* Get user information and logoff the user.  [MASUser.Current.GetInfoAsync](@ref MASFoundation::MASUser::GetInfoAsync) and [MASUser.Current.LogoffAsync](@ref MASFoundation::MASUser::LogoffAsync)
 	
 ### Debugging ###
 
