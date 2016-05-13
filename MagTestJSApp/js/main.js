@@ -111,8 +111,18 @@
 
                 self._addClickHandler("postcode-1-button", "postcode1", function () {
                     var code = "DM001PL";
+
+                    var params = new MASFoundation.PropertyCollection();
+                    params.add("zzz", "woohoo");
+                    params.add("dummy", "3423");
+                    params.add("dummy", "1234");
+
+                    var headers = new MASFoundation.PropertyCollection();
+                    headers.add("zzz", "woohoo");
+                    headers.add("dummy", "2345");
+
                     MASFoundation.MAS.getFromAsync("https://test.pulsenow.co.uk/mobile/customerinfo/v2/postcode/" + code,
-                        null, null, MASFoundation.ResponseType.json).then(function (result) {
+                        params, headers, MASFoundation.ResponseType.json).then(function (result) {
                             self._onLogMessage("Got postcode")
                         }, function (error) {
                             var errorInfo = MASFoundation.MAS.errorLookup(error.number);
@@ -160,7 +170,7 @@
         },
 
         _onLoginRequested: function () {
-            MASFoundation.User.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
+            MASFoundation.MASUser.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
                 self._onLogMessage("User logged in!");
             }, function (error) {
                 self._onLogMessage("User login failed!");

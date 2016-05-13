@@ -10,7 +10,7 @@ namespace MASFoundation
         /// <summary>
         /// Server response headers
         /// </summary>
-        public IDictionary<string, string> Headers { get; internal set; }
+        public ReadonlyPropertyCollection Headers { get; internal set; }
 
         /// <summary>
         /// Server response content

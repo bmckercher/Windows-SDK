@@ -1,6 +1,8 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using Windows.Security.Cryptography;
+using System.Linq;
 
 namespace MASFoundation.Internal.Http
 {
@@ -19,18 +21,12 @@ namespace MASFoundation.Internal.Http
 
         public void Add(string name, string value)
         {
-            if (_sb.Length > 0)
-            {
-                _sb.Append("&");
-            }
-
-            _sb.AppendFormat("{0}={1}", name, WebUtility.UrlEncode(value));
+            _parameters.Add(new KeyValuePair<string, string>(name, WebUtility.UrlEncode(value)));
         }
 
         public void AddNonce()
         {
             var buffer = CryptographicBuffer.GenerateRandom(10);
-
             string randomHex = CryptographicBuffer.EncodeToHexString(buffer);
 
             Add("nonce", randomHex);
@@ -38,16 +34,32 @@ namespace MASFoundation.Internal.Http
 
         public override string ToString()
         {
+            StringBuilder sb = new StringBuilder();
+
             if (_baseUrl != null)
             {
-                return string.Format("{0}?{1}", _baseUrl, _sb.ToString());
+                sb.Append(_baseUrl);
             }
-            else
+
+            if (_parameters.Count > 0)
             {
-                return _sb.ToString();
+                if (_baseUrl != null)
+                {
+                    sb.Append("?");
+                }
+
+                var sorted = _parameters.OrderBy(pair => pair.Key);
+                foreach (var pair in sorted)
+                {
+                    sb.AppendFormat("{0}={1}&", pair.Key, pair.Value);
+                }
+
+                sb.Remove(sb.Length - 1, 1);
             }
+
+            return sb.ToString();
         }
 
-        StringBuilder _sb = new StringBuilder();
+        List<KeyValuePair<string, string>> _parameters = new List<KeyValuePair<string, string>>();
     }
 }

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.Foundation.Metadata;
 using Windows.Storage;
 
 namespace MASFoundation
@@ -123,175 +122,166 @@ namespace MASFoundation
         /// <summary>
         /// This method makes HTTP DELETE calls to an endpoint.
         /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="parameterInfo"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="responseType"></param>
+        /// <param name="endPointPath">URL or server</param>
+        /// <param name="parameters">URL parameters</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="responseType">Expected response type</param>
         /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
         /// <returns>HTTP text response from server</returns>
-        public static IAsyncOperation<TextResponse> DeleteFromAsync(string endPointPath, 
-            IDictionary<string, string> parameterInfo, 
-            IDictionary<string, string> headerInfo,
+        public static IAsyncOperation<TextResponse> DeleteFromAsync(string endPointPath,
+            PropertyCollection parameters,
+            PropertyCollection headers,
             ResponseType responseType)
         {
-            return RequestHttpAsync(HttpMethod.DELETE, endPointPath, parameterInfo, 
-                headerInfo, RequestType.None, responseType).AsAsyncOperation<TextResponse>();
+            return RequestHttpAsync(HttpMethod.DELETE, endPointPath, parameters,
+                headers, RequestType.None, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
         /// This method makes HTTP GET calls to an endpoint.
         /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="parameterInfo"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="responseType"></param>
+        /// <param name="endPointPath">URL of server</param>
+        /// <param name="parameters">URL parameters</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="responseType">Expected response type</param>
         /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
         /// <returns>HTTP text response from server</returns>
-        public static IAsyncOperation<TextResponse> GetFromAsync(string endPointPath, 
-            IDictionary<string, string> parameterInfo, 
-            IDictionary<string, string> headerInfo,
+        public static IAsyncOperation<TextResponse> GetFromAsync(string endPointPath,
+            PropertyCollection parameters,
+            PropertyCollection headers,
             ResponseType responseType)
         {
-            return RequestHttpAsync(HttpMethod.GET, endPointPath, parameterInfo,
-                headerInfo, RequestType.None, responseType).AsAsyncOperation<TextResponse>();
+            return RequestHttpAsync(HttpMethod.GET, endPointPath, parameters,
+                headers, RequestType.None, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
         /// This method makes HTTP POST calls to an endpoint.
         /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="body"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
+        /// <param name="endPointPath">URL of server</param>
+        /// <param name="text">Text to post</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="requestType">Text format type</param>
+        /// <param name="responseType">Expected response type</param>
         /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
         /// <returns>HTTP text response from server</returns>
-        [DefaultOverload]
+        public static IAsyncOperation<TextResponse> PostTextToAsync(string endPointPath,
+            string text,
+            PropertyCollection headers,
+            RequestType requestType,
+            ResponseType responseType)
+        {
+            PropertyCollection parameters = new PropertyCollection();
+            parameters.Add("body", text);
+
+            return RequestHttpAsync(HttpMethod.POST, endPointPath, parameters,
+                headers, requestType, responseType).AsAsyncOperation<TextResponse>();
+        }
+
+        /// <summary>
+        /// This method makes HTTP POST calls to an endpoint.
+        /// </summary>
+        /// <param name="endPointPath">URL of server</param>
+        /// <param name="parameters">Parameters to post</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="requestType">Request format type</param>
+        /// <param name="responseType">Expected response type</param>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> PostToAsync(string endPointPath,
-            string body,
-            IDictionary<string, string> headerInfo,
+            PropertyCollection parameters,
+            PropertyCollection headers,
             RequestType requestType,
             ResponseType responseType)
         {
-            var parameterInfo = new Dictionary<string, string>
-            {
-                { "Body", body }
-            };
-
-            return RequestHttpAsync(HttpMethod.POST, endPointPath, parameterInfo,
-                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
-        }
-
-        /// <summary>
-        /// This method makes HTTP POST calls to an endpoint.
-        /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="parameterInfo"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
-        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
-        /// <returns>HTTP text response from server</returns>
-        public static IAsyncOperation<TextResponse> PostToAsync(string endPointPath, 
-            IDictionary<string, string> parameterInfo, 
-            IDictionary<string, string> headerInfo,
-            RequestType requestType,
-            ResponseType responseType)
-        {
-            return RequestHttpAsync(HttpMethod.POST, endPointPath, parameterInfo,
-                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
+            return RequestHttpAsync(HttpMethod.POST, endPointPath, parameters,
+                headers, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
         /// This method makes HTTP PATCH calls to an endpoint.
         /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="body"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
+        /// <param name="endPointPath">URL of server</param>
+        /// <param name="text">Text to send</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="requestType">Request format type</param>
+        /// <param name="responseType">Expected response type</param>
         /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
         /// <returns>HTTP text response from server</returns>
-        [DefaultOverload]
-        public static IAsyncOperation<TextResponse> PatchToAsync(string endPointPath,
-            string body,
-            IDictionary<string, string> headerInfo,
+        public static IAsyncOperation<TextResponse> PatchTextToAsync(string endPointPath,
+            string text,
+            PropertyCollection headers,
             RequestType requestType,
             ResponseType responseType)
         {
-            var parameterInfo = new Dictionary<string, string>
-            {
-                { "Body", body }
-            };
+            PropertyCollection parameters = new PropertyCollection();
+            parameters.Add("body", text);
 
-            return RequestHttpAsync(HttpMethod.PATCH, endPointPath, parameterInfo,
-                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
+            return RequestHttpAsync(HttpMethod.PATCH, endPointPath, parameters,
+                headers, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
         /// This method makes HTTP PATCH calls to an endpoint.
         /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="parameterInfo"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
+        /// <param name="endPointPath">URL of server</param>
+        /// <param name="parameters">Parameters to send</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="requestType">Request format type</param>
+        /// <param name="responseType">Expected response type</param>
         /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
         /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> PatchToAsync(string endPointPath,
-            IDictionary<string, string> parameterInfo,
-            IDictionary<string, string> headerInfo,
+            PropertyCollection parameters,
+            PropertyCollection headers,
             RequestType requestType,
             ResponseType responseType)
         {
-            return RequestHttpAsync(HttpMethod.PATCH, endPointPath, parameterInfo,
-                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
+            return RequestHttpAsync(HttpMethod.PATCH, endPointPath, parameters,
+                headers, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         /// <summary>
         /// This method makes HTTP PUT calls to an endpoint.
         /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="body"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
+        /// <param name="endPointPath">URL of server</param>
+        /// <param name="text">Text to send</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="requestType">Request format type</param>
+        /// <param name="responseType">Expected response type</param>
         /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
         /// <returns>HTTP text response from server</returns>
-        [DefaultOverload]
+        public static IAsyncOperation<TextResponse> PutTextToAsync(string endPointPath,
+            string text,
+            PropertyCollection headers,
+            RequestType requestType,
+            ResponseType responseType)
+        {
+            PropertyCollection parameters = new PropertyCollection();
+            parameters.Add("body", text);
+
+            return RequestHttpAsync(HttpMethod.PUT, endPointPath, parameters,
+                headers, requestType, responseType).AsAsyncOperation<TextResponse>();
+        }
+
+        /// <summary>
+        /// This method makes HTTP PUT calls to an endpoint.
+        /// </summary>
+        /// <param name="endPointPath">URL of server</param>
+        /// <param name="parameters">Parameters to send</param>
+        /// <param name="headers">Additional request headers</param>
+        /// <param name="requestType">Request format type</param>
+        /// <param name="responseType">Expected response type</param>
+        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
+        /// <returns>HTTP text response from server</returns>
         public static IAsyncOperation<TextResponse> PutToAsync(string endPointPath,
-            string body,
-            IDictionary<string, string> headerInfo,
+            PropertyCollection parameters,
+            PropertyCollection headers,
             RequestType requestType,
             ResponseType responseType)
         {
-            var parameterInfo = new Dictionary<string, string>
-            {
-                { "Body", body }
-            };
-
-            return RequestHttpAsync(HttpMethod.PUT, endPointPath, parameterInfo,
-                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
-        }
-
-        /// <summary>
-        /// This method makes HTTP PUT calls to an endpoint.
-        /// </summary>
-        /// <param name="endPointPath"></param>
-        /// <param name="parameterInfo"></param>
-        /// <param name="headerInfo"></param>
-        /// <param name="requestType"></param>
-        /// <param name="responseType"></param>
-        /// <exception cref="System.Exception">Thrown when application or device is not registered</exception>
-        /// <returns>HTTP text response from server</returns>
-        public static IAsyncOperation<TextResponse> PutToAsync(string endPointPath, 
-            IDictionary<string, string> parameterInfo, 
-            IDictionary<string, string> headerInfo,
-            RequestType requestType,
-            ResponseType responseType)
-        {
-            return RequestHttpAsync(HttpMethod.PUT, endPointPath, parameterInfo,
-                headerInfo, requestType, responseType).AsAsyncOperation<TextResponse>();
+            return RequestHttpAsync(HttpMethod.PUT, endPointPath, parameters,
+                headers, requestType, responseType).AsAsyncOperation<TextResponse>();
         }
 
         #endregion
@@ -333,8 +323,8 @@ namespace MASFoundation
         }
 
         static async Task<TextResponse> RequestHttpAsync(HttpMethod method, string endPointPath,
-            IDictionary<string, string> parameterInfo,
-            IDictionary<string, string> headerInfo,
+            PropertyCollection parameters,
+            PropertyCollection headers,
             RequestType requestType,
             ResponseType responseType)
         {
@@ -354,9 +344,9 @@ namespace MASFoundation
             if (method == HttpMethod.GET || method == HttpMethod.DELETE)
             {
                 var builder = new HttpUrlBuilder(endPointPath);
-                if (parameterInfo != null)
+                if (parameters != null)
                 {
-                    foreach (var paramInfo in parameterInfo)
+                    foreach (var paramInfo in parameters.Properties)
                     {
                         builder.Add(paramInfo.Key, paramInfo.Value);
                     }
@@ -364,18 +354,18 @@ namespace MASFoundation
 
                 url = builder.ToString();
             }
-            else
+            else if (parameters != null)
             {
-                body = FormatBody(requestType, parameterInfo);
+                body = FormatBody(requestType, parameters.Properties);
             }
 
-            var headers = await SetupRequestHeaders(headerInfo, requestType, responseType);
+            var requestHeaders = await SetupRequestHeaders(headers?.Properties, requestType, responseType);
 
             return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
             {
                 Url = url,
                 Method = method,
-                Headers = headers,
+                Headers = requestHeaders,
                 Body = body,
                 Certificate = MASDevice.Current.Certificate
             }));
@@ -387,18 +377,18 @@ namespace MASFoundation
             LoginRequested?.Invoke(null, e);
         }
 
-        static string FormatBody(RequestType type, IDictionary<string, string> parameterInfo)
+        static string FormatBody(RequestType type, PropertyList parameters)
         {
             string body = string.Empty;
 
-            if (parameterInfo != null)
+            if (parameters != null)
             {
                 switch (type)
                 {
                     case RequestType.FormUrlEncoded:
                         {
                             HttpUrlBuilder builder = new HttpUrlBuilder();
-                            foreach (var item in parameterInfo)
+                            foreach (var item in parameters)
                             {
                                 builder.Add(item.Key, item.Value);
                             }
@@ -406,7 +396,7 @@ namespace MASFoundation
                         }
                         break;
                     default:
-                        body = parameterInfo.Values.FirstOrDefault() ?? string.Empty;
+                        body = parameters.FirstOrDefault()?.Value ?? string.Empty;
                         break;
                 }
             }
@@ -414,7 +404,7 @@ namespace MASFoundation
             return body;
         }
 
-        static async Task<Dictionary<string, string>> SetupRequestHeaders(IDictionary<string, string> givenHeaders, RequestType requestType, ResponseType responseType)
+        static async Task<Dictionary<string, string>> SetupRequestHeaders(PropertyList givenHeaders, RequestType requestType, ResponseType responseType)
         {
             var deviceMagId = MASDevice.Current.MagId;
             var headers = new Dictionary<string, string>
@@ -492,13 +482,15 @@ namespace MASFoundation
 
         static TextResponse ToMASResponse(HttpTextResponse response)
         {
-            return new TextResponse()
+            var masResponse = new TextResponse()
             {
-                Headers = response.Headers,
+                Headers = new ReadonlyPropertyCollection(response.Headers),
                 IsSuccessful = response.IsSuccessful,
                 StatusCode = response.StatusCode,
                 Text = response.Text
             };
+
+            return masResponse;
         }
 
         #endregion

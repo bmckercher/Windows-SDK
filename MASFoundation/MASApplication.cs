@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MASFoundation
 {
@@ -111,7 +112,7 @@ namespace MASFoundation
             Identifier = config.DefaultClientId.Id;
             Environment = config.DefaultClientId.Environment;
             RegisteredBy = config.DefaultClientId.RegisteredBy;
-            Scope = new List<string>(config.DefaultClientId.Scope.Split(' ')).AsReadOnly();
+            Scope = new List<string>(config.DefaultClientId.Scope.Split(' ').Where(s => !string.IsNullOrWhiteSpace(s))).AsReadOnly();
             ScopeAsString = config.DefaultClientId.Scope;
             Status = config.DefaultClientId.Status;
 
