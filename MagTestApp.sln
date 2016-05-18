@@ -10,6 +10,19 @@ EndProject
 Project("{262852C6-CD72-467D-83FE-5EEB1973A190}") = "MagTestJSApp", "MagTestJSApp\MagTestJSApp.jsproj", "{2004CCB2-9B99-4E33-9C18-BC5EF569C245}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doxygen", "doxygen", "{AE84E951-88FE-435C-A318-31E5CBB3D5AB}"
+	ProjectSection(SolutionItems) = preProject
+		doxygen\doxygen.exe = doxygen\doxygen.exe
+		doxygen\doxyindexer.exe = doxygen\doxyindexer.exe
+		doxygen\doxysearch.cgi.exe = doxygen\doxysearch.cgi.exe
+		doxygen\libclang.dll = doxygen\libclang.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{40781E75-69EB-4A53-8EA0-2242A5CFFE04}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
