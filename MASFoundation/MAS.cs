@@ -21,8 +21,8 @@ namespace MASFoundation
         {
             ConfigFileName = "msso_config.json";
 
-            // User is the default registration flow
-            RegistrationKind = RegistrationKind.User;
+            // Client is the default registration flow
+            RegistrationKind = RegistrationKind.Client;
 
             // No logging by default
             LogLevel = LogLevel.None;
