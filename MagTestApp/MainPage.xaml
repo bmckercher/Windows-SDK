@@ -10,11 +10,11 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="16"/>
+            <RowDefinition Height="8"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="16"/>
+            <RowDefinition Height="8"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="16"/>
+            <RowDefinition Height="8"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -26,20 +26,20 @@
             <RadioButton x:Name="BritishGasTestConfigBtn" IsChecked="True" Content="British Gas Config"/>
             <RadioButton x:Name="CATestConfigBtn" Grid.Column="1" Content="CA Config"/>
         </Grid>
-        
+
         <GridView Margin="8" Grid.Row="3">
             <GridView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsWrapGrid Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </GridView.ItemsPanel>
-            <Button x:Name="StartBtn" Click="StartBtn_Click" Width="100" Height="100" Content="Start"/>
-            <Button x:Name="LoginBtn" Click="LoginBtn_Click" Width="100" Height="100" Content="Login"/>
-            <Button x:Name="UnregisterBtn" Click="UnregisterBtn_Click" Width="100" Height="100" Content="Unregister&#10;Device"/>
-            <Button x:Name="LogoutDeviceBtn" Click="LogoutDeviceBtn_Click" Width="100" Height="100" Content="Logout&#10;Device"/>
-            <Button x:Name="LogoffBtn" Click="LogoffBtn_Click" Width="100" Height="100" Content="Logoff"/>
-            <Button x:Name="GetUserInfoBtn" Click="GetUserInfoBtn_Click" Width="100" Height="100" Content="User Info"/>
-            <Button x:Name="ResetBtn" Click="ResetBtn_Click" Width="100" Height="100" Content="Reset"/>
+            <Button x:Name="StartBtn" Click="StartBtn_Click" Width="88" Height="52" Content="Start"/>
+            <Button x:Name="LoginBtn" Click="LoginBtn_Click" Width="88" Height="52" Content="Login"/>
+            <Button x:Name="UnregisterBtn" Click="UnregisterBtn_Click" Width="88" Height="52" Content="Unregister&#10;Device"/>
+            <Button x:Name="LogoutDeviceBtn" Click="LogoutDeviceBtn_Click" Width="88" Height="52" Content="Logout&#10;Device"/>
+            <Button x:Name="LogoffBtn" Click="LogoffBtn_Click" Width="88" Height="52" Content="Logoff"/>
+            <Button x:Name="GetUserInfoBtn" Click="GetUserInfoBtn_Click" Width="88" Height="52" Content="User Info"/>
+            <Button x:Name="ResetBtn" Click="ResetBtn_Click" Width="88" Height="52" Content="Reset"/>
         </GridView>
 
         <ProgressBar x:Name="BusyStatus" Grid.Row="4" Background="Transparent" Visibility="Collapsed" IsIndeterminate="True" HorizontalAlignment="Stretch" VerticalAlignment="Center" />
@@ -49,4 +49,5 @@
         <TextBox IsReadOnly="True" Grid.Row="5" x:Name="DebugInfo" TextWrapping="Wrap" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Visible" />
 
     </Grid>
+
 </Page>
