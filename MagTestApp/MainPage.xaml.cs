@@ -63,6 +63,9 @@ namespace MagTestApp
             try
             {
                 var user = await MASUser.LoginAsync("winsdktest2", "P@$$w0rd01");
+
+                var hasAccess = await MASUser.Current.CheckAccessAsync();
+                LogMessage("Has access " + hasAccess.ToString());
             }
             catch (Exception exp)
             {
@@ -76,6 +79,9 @@ namespace MagTestApp
             try
             {
                 await MASUser.LoginAsync("winsdktest2", "P@$$w0rd01");
+
+                var hasAccess = await MASUser.Current.CheckAccessAsync();
+                LogMessage("Has access " + hasAccess.ToString());
             }
             catch (Exception exp)
             {
@@ -106,6 +112,9 @@ namespace MagTestApp
             try
             {
                 await MASDevice.Current.LogoutAsync(true);
+
+                var hasAccess = await MASUser.Current.CheckAccessAsync();
+                LogMessage("Has access " + hasAccess.ToString());
             }
             catch (Exception exp)
             {
@@ -123,6 +132,9 @@ namespace MagTestApp
                 if (MASUser.Current != null)
                 {
                     await MASUser.Current.LogoffAsync();
+
+                    var hasAccess = await MASUser.Current.CheckAccessAsync();
+                    LogMessage("Has access " + hasAccess.ToString());
                 }
                 else
                 {
