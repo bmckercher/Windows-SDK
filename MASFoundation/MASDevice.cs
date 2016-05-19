@@ -236,8 +236,15 @@ namespace MASFoundation
 
         async Task LoadAsync()
         {
-            //var serverCert = _config.Server.ServerCerts[0];
-            //await _certManager.InstallTrustedServerCert(serverCert);
+            // Install any certificate found in the server certs.
+            // This is required for MAG SSL with alternative certificate authorities.
+            if (_config.Server.ServerCerts != null)
+            {
+                foreach (var serverCert in _config.Server.ServerCerts)
+                {
+                    await _certManager.InstallTrustedServerCert(serverCert);
+                }
+            }
 
             var clientInfo = await _storage.GetTextAsync(StorageKeyNames.ClientInfo);
             string clientId = null;
