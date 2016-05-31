@@ -322,11 +322,16 @@ namespace MASFoundation
             await MASApplication.Current.StartAsync(configContent, RegistrationKind);
         }
 
+        static Task<TextResponse> RequestHttpAsync(HttpMethod method, string endPointPath,
+            PropertyCollection parameters, PropertyCollection headers,
+            RequestType requestType, ResponseType responseType)
+        {
+            return RequestHttpAsync(method, endPointPath, parameters, headers, requestType, responseType, true);
+        }
+
         static async Task<TextResponse> RequestHttpAsync(HttpMethod method, string endPointPath,
-            PropertyCollection parameters,
-            PropertyCollection headers,
-            RequestType requestType,
-            ResponseType responseType)
+            PropertyCollection parameters, PropertyCollection headers,
+            RequestType requestType, ResponseType responseType, bool attemptTokenRefresh)
         {
             if (!MASApplication.IsRegistered)
             {
@@ -359,16 +364,46 @@ namespace MASFoundation
                 body = FormatBody(requestType, parameters.Properties);
             }
 
-            var requestHeaders = await SetupRequestHeaders(headers?.Properties, requestType, responseType);
 
-            return ToMASResponse(await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
+            MASUser requestUser = null;
+            if (MASUser.Current != null && MASUser.Current.IsLoggedIn)
             {
-                Url = url,
-                Method = method,
-                Headers = requestHeaders,
-                Body = body,
-                Certificate = MASDevice.Current.Certificate
-            }));
+                requestUser = MASUser.Current;
+            }
+            else if (MASApplication.Current.Client != null)
+            {
+                requestUser = MASApplication.Current.Client;
+            }
+
+            var requestHeaders = await SetupRequestHeaders(requestUser, headers?.Properties, requestType, responseType);
+
+            try
+            {
+                var requestResponse = await HttpRequestFactory.RequestTextAsync(new HttpRequestInfo()
+                {
+                    Url = url,
+                    Method = method,
+                    Headers = requestHeaders,
+                    Body = body,
+                    Certificate = MASDevice.Current.Certificate
+                });
+
+                return ToMASResponse(requestResponse);
+            }
+            catch (MASException exp)
+            {
+                if (requestUser == null || attemptTokenRefresh == false || exp.MASErrorCode != ErrorCode.TokenAccessExpired)
+                {
+                    throw exp;
+                }
+            }
+
+            // Our token has expired, attempt to refresh it and try again!
+            await requestUser.RefreshAccessTokenAsync();
+
+            // Lets not try to refresh token after our first attempt
+            return await RequestHttpAsync(method, endPointPath, parameters, 
+                headers, requestType, responseType, false);
         }
 
 
@@ -404,7 +439,7 @@ namespace MASFoundation
             return body;
         }
 
-        static async Task<Dictionary<string, string>> SetupRequestHeaders(PropertyList givenHeaders, RequestType requestType, ResponseType responseType)
+        static async Task<Dictionary<string, string>> SetupRequestHeaders(MASUser user, PropertyList givenHeaders, RequestType requestType, ResponseType responseType)
         {
             var deviceMagId = MASDevice.Current.MagId;
             var headers = new Dictionary<string, string>
@@ -412,13 +447,10 @@ namespace MASFoundation
                 { "mag-identifier", deviceMagId }
             };
 
-            if (MASUser.Current != null && MASUser.Current.IsLoggedIn)
+            var accessTokenHeaderValue = await user?.GetAccessHeaderValueAsync();
+            if (accessTokenHeaderValue != null)
             {
-                var accessTokenHeaderValue = await MASUser.Current.GetAccessHeaderValueAsync();
-                if (accessTokenHeaderValue != null)
-                {
-                    headers[HttpHeaders.Authorization] = accessTokenHeaderValue;
-                }
+                headers[HttpHeaders.Authorization] = accessTokenHeaderValue;
             }
 
             if (givenHeaders != null)

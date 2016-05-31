@@ -135,6 +135,11 @@
         //
 
         /// <summary>
+        /// Access token has expired
+        /// </summary>
+        TokenAccessExpired,
+
+        /// <summary>
         /// Given access token is not granted for required scope.
         /// </summary>
         AccessTokenInvalid,

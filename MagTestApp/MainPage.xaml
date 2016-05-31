@@ -40,6 +40,7 @@
             <Button x:Name="LogoffBtn" Click="LogoffBtn_Click" Width="88" Height="52" Content="Logoff"/>
             <Button x:Name="GetUserInfoBtn" Click="GetUserInfoBtn_Click" Width="88" Height="52" Content="User Info"/>
             <Button x:Name="ResetBtn" Click="ResetBtn_Click" Width="88" Height="52" Content="Reset"/>
+            <Button x:Name="LogoutDeviceNoClearBtn" Click="LogoutDeviceNoClearBtn_Click" Width="88" Height="52" Content="Logout&#10;No Clear"/>
         </GridView>
 
         <ProgressBar x:Name="BusyStatus" Grid.Row="4" Background="Transparent" Visibility="Collapsed" IsIndeterminate="True" HorizontalAlignment="Stretch" VerticalAlignment="Center" />

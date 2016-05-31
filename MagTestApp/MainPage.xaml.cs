@@ -253,6 +253,22 @@ namespace MagTestApp
             DebugInfo.Text = "";
         }
 
+        private async void LogoutDeviceNoClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            IsBusy = true;
+            try
+            {
+                await MASDevice.Current.LogoutAsync(false);
 
+                var hasAccess = await MASUser.Current.CheckAccessAsync();
+                LogMessage("Has access " + hasAccess.ToString());
+            }
+            catch (Exception exp)
+            {
+                LogMessage("Logout device failed " + exp.ToString());
+            }
+
+            IsBusy = false;
+        }
     }
 }

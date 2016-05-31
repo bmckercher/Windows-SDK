@@ -100,25 +100,34 @@ namespace MASFoundation
             }
         }
 
-        internal static async Task LoginAnonymouslyAsync(Configuration config, MASDevice device)
-        {
-            var previousUser = new MASUser(config, device);
-            await previousUser.LoginAsync();
-            if (previousUser.IsLoggedIn)
-            {
-                MASUser.Current = previousUser;
-            }
-        }
-
         internal async Task LogoutDeviceAsync(bool clearLocal)
         {
+            if (_idToken == null)
+            {
+                ErrorFactory.ThrowError(ErrorCode.DeviceNotLoggedIn);
+            }
+
             await MAGRequests.LogoutSessionAsync(_config, MASDevice.Current, this, clearLocal);
 
             if (clearLocal)
             {
-                await RemoveStoredAsync();
+                await RemoveAccessTokensAsync();
 
                 Current = null;
+            }
+            else
+            {
+                _idToken = null;
+                _idTokenType = null;
+
+                JsonObject obj = new JsonObject();
+                obj.SetNamedValue("accessToken", JsonValue.CreateStringValue(_accessToken));
+                obj.SetNamedValue("refreshToken", _refreshToken != null ? JsonValue.CreateStringValue(_refreshToken) : JsonValue.CreateNullValue());
+                obj.SetNamedValue("accessTokenExpiration", JsonValue.CreateNumberValue(_expireTimeUtc.ToBinary()));
+                obj.SetNamedValue("idToken", JsonValue.CreateNullValue());
+                obj.SetNamedValue("idTokenType", JsonValue.CreateNullValue());
+
+                await _storage.SetAsync(StorageKeyNames.AccessInfo, obj.Stringify());
             }
         }
         
@@ -133,7 +142,7 @@ namespace MASFoundation
             await UpdateTokens(data);
         }
 
-        internal async Task LoginAsync()
+        internal async Task LoginAnonymouslyAsync()
         {
             if (IsLoggedIn)
             {
@@ -142,30 +151,51 @@ namespace MASFoundation
 
             var data = await MAGRequests.RequestAccessTokenAnonymouslyAsync(_config, _device);
             await UpdateTokens(data);
+
+            _isAnonymous = true;
         }
 
-        internal void ClearAccessTokens()
+        internal async Task RefreshAccessTokenAsync()
         {
-            _accessToken = _refreshToken = _idToken = _idTokenType = null;
-            _expireTimeUtc = DateTime.MinValue;
-        }
-
-        internal async Task RemoveStoredAsync()
-        {
-            ClearAccessTokens();
-
-            await SecureStorage.RemoveAsync(StorageKeyNames.AccessInfo);
+            // We have a refresh token, lets use that.
+            if (_refreshToken != null)
+            {
+                var data = await MAGRequests.RefreshAccessTokenAsync(_config, _device, _refreshToken);
+                await UpdateTokens(data);
+            }
+            // We have an id token, lets use that to request an access token.
+            else if (_idToken != null && _idTokenType != null)
+            {
+                var data = await MAGRequests.RequestAccessTokenFromIdTokenAsync(_config, _device, _idToken, _idTokenType);
+                await UpdateTokens(data);
+            }
+            // Lets check if we are anonymous, we can simply just login in again to get an access token.
+            else if (_isAnonymous)
+            {
+                var data = await MAGRequests.RequestAccessTokenAnonymouslyAsync(_config, _device);
+                await UpdateTokens(data);
+            }
         }
 
         internal async Task<string> GetAccessTokenAsync()
         {
-            // We have an id token but not an access token, try to get an access token.
+            bool needsRefresh = false;
+            // If we have an id token but no access token, refresh access token.
             if (_idToken != null && _idTokenType != null && _accessToken == null)
+            {
+                needsRefresh = true;
+            }
+            // If we have an access token but it has expired, attempt refresh.
+            else if (_accessToken != null && DateTime.UtcNow > _expireTimeUtc)
+            {
+                needsRefresh = true;
+            }
+
+            if (needsRefresh)
             {
                 try
                 {
-                    var data = await MAGRequests.RequestAccessTokenFromIdTokenAsync(_config, _device, _idToken, _idTokenType);
-                    await UpdateTokens(data);
+                    await RefreshAccessTokenAsync();
                 }
                 catch (MASException exp)
                 {
@@ -173,10 +203,7 @@ namespace MASFoundation
                     {
                         // We failed to get our access token and it was not a network error, make sure we clear our access token 
                         // from memory and storage
-                        await RemoveStoredAsync();
-
-                        // Throw user not authenticated error
-                        ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated, exp);
+                        await RemoveAccessTokensAsync();
                     }
                     else
                     {
@@ -184,59 +211,22 @@ namespace MASFoundation
                         throw exp;
                     }
                 }
-
-                return _accessToken;
             }
-            else if (_accessToken != null)
-            {
-                // We have an access token, lets check if it is is expired
-                if (DateTime.UtcNow > _expireTimeUtc)
-                {
-                    // We have a refresh token lets try to get a new access token
-                    if (_refreshToken != null)
-                    {
-                        try
-                        {
-                            var data = await MAGRequests.RefreshAccessTokenAsync(_config, _device, _refreshToken);
-                            await UpdateTokens(data);
-                        }
-                        catch (MASException exp)
-                        {
-                            if (exp.MASErrorCode != ErrorCode.NetworkNotReachable)
-                            {
-                                // We failed to get our access token and it was not a network error, make sure we clear our access token
-                                // from memory and storage
-                                await RemoveStoredAsync();
 
-                                // Throw user not authenticated error
-                                ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated, exp);
-                            }
-                            else
-                            {
-                                // Rethrow error here
-                                throw exp;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // We do not have a refresh token and our access token has expired.
-                        await RemoveStoredAsync();
-
-                        // Throw user not authenticated error
-                        ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated);
-                    }
-                }
-
-                return _accessToken;
-            }
-            else
+            if (_accessToken == null)
             {
                 // Throw user not authenticated error
-                ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated);
+                if (_isAnonymous)
+                {
+                    ErrorFactory.ThrowError(ErrorCode.DeviceNotLoggedIn);
+                }
+                else
+                {
+                    ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated);
+                }
             }
 
-            return null;
+            return _accessToken;
         }
 
         internal async Task<string> GetAccessHeaderValueAsync()
@@ -254,6 +244,19 @@ namespace MASFoundation
         #endregion
 
         #region Private Methods
+
+        void ClearAccessTokens()
+        {
+            _accessToken = _refreshToken = _idToken = _idTokenType = null;
+            _expireTimeUtc = DateTime.MinValue;
+        }
+
+        async Task RemoveAccessTokensAsync()
+        {
+            ClearAccessTokens();
+
+            await SecureStorage.RemoveAsync(StorageKeyNames.AccessInfo);
+        }
 
         async Task<bool> CheckAccessInternalAsync()
         {
@@ -299,7 +302,7 @@ namespace MASFoundation
             {
                 if (Current != null)
                 {
-                    await Current.RemoveStoredAsync();
+                    await Current.RemoveAccessTokensAsync();
                 }
 
                 await MASDevice.Current.RegisterWithUserAsync(username, password);
@@ -354,6 +357,20 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated);
             }
 
+            try
+            {
+                return (IUserInfo)await MAGRequests.GetUserInfoAsync(_config, _device, this);
+            }
+            catch (MASException exp)
+            {
+                if (exp.MASErrorCode != ErrorCode.TokenAccessExpired)
+                {
+                    throw exp;
+                }
+            }
+
+            await RefreshAccessTokenAsync();
+
             return (IUserInfo)await MAGRequests.GetUserInfoAsync(_config, _device, this);
         }
 
@@ -376,7 +393,7 @@ namespace MASFoundation
 
             await MAGRequests.RevokeAccessTokenAsync(_config, _device, this);
 
-            await RemoveStoredAsync();
+            await RemoveAccessTokensAsync();
         }
 
         async Task LoadAsync()
@@ -437,6 +454,7 @@ namespace MASFoundation
         Configuration _config;
         MASDevice _device;
         SecureStorage _storage;
+        bool _isAnonymous;
 
         #endregion
     }

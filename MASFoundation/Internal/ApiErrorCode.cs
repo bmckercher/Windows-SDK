@@ -84,6 +84,7 @@
         RevokeTokenClientCredentialsInvalid = 3004201,
         RevokeAuthorizationConsentUrlPrefixInvalid = 3004203,
 
+        TokenAccessExpired = 990,
         TokenNotGrantedForScopeSuffix = 991,
         TokenInvalidAccessTokenSuffix = 992,
         TokenDisabledSuffix = 993

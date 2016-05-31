@@ -116,20 +116,34 @@ namespace MASFoundation.Internal.Http
                 case ApiErrorCode.RequestTokenResourceOwnerCredentialsInvalid:
                 case ApiErrorCode.RequestTokenResourceOwnerCredentialsInvalid2:
                     return ErrorCode.UserBasicCredentialsNotValid;
-
-                //
-                // Token
-                //
-                case ApiErrorCode.TokenInvalidAccessTokenSuffix:
-                    return ErrorCode.AccessTokenInvalid;
-                case ApiErrorCode.TokenDisabledSuffix:
-                    return ErrorCode.AccessTokenDisabled;
-                case ApiErrorCode.TokenNotGrantedForScopeSuffix:
-                    return ErrorCode.AccessTokenNotGrantedScope;
-
-                default:
-                    return ErrorCode.Unknown;
             }
+
+            // Check for suffix code
+            var codeString = ((int)code).ToString();
+            if (codeString.Length > 2)
+            {
+                var suffixCodeString = codeString.Substring(codeString.Length - 3, 3);
+                int suffixCode;
+                if (int.TryParse(suffixCodeString, out suffixCode))
+                {
+                    switch ((ApiErrorCode)suffixCode)
+                    {
+                        //
+                        // Token
+                        //
+                        case ApiErrorCode.TokenAccessExpired:
+                            return ErrorCode.TokenAccessExpired;
+                        case ApiErrorCode.TokenInvalidAccessTokenSuffix:
+                            return ErrorCode.AccessTokenInvalid;
+                        case ApiErrorCode.TokenDisabledSuffix:
+                            return ErrorCode.AccessTokenDisabled;
+                        case ApiErrorCode.TokenNotGrantedForScopeSuffix:
+                            return ErrorCode.AccessTokenNotGrantedScope;
+                    }
+                }
+            }
+
+            return ErrorCode.Unknown;
         }
 
         protected HttpTextResponse _response;

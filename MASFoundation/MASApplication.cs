@@ -140,7 +140,9 @@ namespace MASFoundation
                         await MASDevice.Current.RegisterWithClientAsync();
 
                         // Create a device anonymous user
-                        await MASUser.LoginAnonymouslyAsync(config, MASDevice.Current);
+                        var clientUser = new MASUser(_config, MASDevice.Current);
+                        await clientUser.LoginAnonymouslyAsync();
+                        Client = clientUser;
 
                         break;
                     case RegistrationKind.User:
@@ -183,6 +185,9 @@ namespace MASFoundation
                 return _config;
             }
         }
+
+        // Client registration flow access information if client registration is used.
+        internal MASUser Client { get; private set; }
 
         Configuration _config;
     }
