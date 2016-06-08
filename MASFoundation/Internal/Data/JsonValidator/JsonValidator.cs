@@ -28,57 +28,8 @@ namespace MASFoundation.Internal.Data
 
         JsonValidationError ValidateWithRule(JsonValidationRule rule, JsonObject obj)
         {
-            var names = rule.Path.Split('.');
-
-            IJsonValue foundValue = obj;
-            foreach (var name in names)
-            {
-                if (foundValue.ValueType != JsonValueType.Object)
-                {
-                    foundValue = null;
-                    break;
-                }
-
-                var parentObj = foundValue.GetObject();
-
-                var arrayStartPos = name.IndexOf('[');
-                
-                if (arrayStartPos > 0)
-                {
-                    foundValue = null;
-                    var arrayEndPos = name.IndexOf(']', arrayStartPos);
-
-                    if (arrayEndPos > 0)
-                    {
-                        var arrayName = name.Substring(0, arrayStartPos);
-                        var arrayIndexText = name.Substring(arrayStartPos + 1, arrayEndPos - arrayStartPos - 1);
-
-                        uint arrayIndex;
-                        if (parentObj.ContainsKey(arrayName) && uint.TryParse(arrayIndexText, out arrayIndex))
-                        {
-                            var foundArray = parentObj.GetNamedArray(arrayName);
-                            if (arrayIndex < foundArray.Count)
-                            {
-                                foundValue = foundArray.GetObjectAt(arrayIndex);
-                            }
-                        }
-                    }
-
-                    if (foundValue == null)
-                    {
-                        break;
-                    }
-                }
-                else
-                {
-                    if (parentObj.ContainsKey(name))
-                    {
-                        foundValue = parentObj.GetNamedValue(name);
-                    }
-                }
-               
-            }
-
+            var foundValue = obj.GetValueFromPath(rule.Path);
+  
             JsonValidationErrorKind validationError;
             if (foundValue == null)
             {

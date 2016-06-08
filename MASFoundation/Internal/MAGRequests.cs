@@ -148,16 +148,14 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static async Task LogoutSessionAsync(Configuration config, MASDevice device, MASUser user, bool logoutApps)
+        public static async Task LogoutSessionAsync(Configuration config, MASDevice device, MASUser user)
         {
             var url = config.GetEndpointPath(config.OAuth.SystemEndpoints.UserSessionLogout);
 
-            var accessToken = await user.GetAccessTokenAsync();
-
             HttpUrlBuilder builder = new HttpUrlBuilder();
-            builder.Add("logout_apps", logoutApps ? "true" : "false");
-            builder.Add("token", accessToken);
-            builder.Add("token_type_hint", "access_token");
+            builder.Add("logout_apps", config.Mag.MobileSdk.IsSSOEnabled ? "true" : "false");
+            builder.Add("id_token", user.IdToken);
+            builder.Add("id_token_type", user.IdTokenType);
 
             var headers = new Dictionary<string, string>
             {

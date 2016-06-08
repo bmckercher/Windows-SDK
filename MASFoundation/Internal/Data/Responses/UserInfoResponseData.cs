@@ -14,13 +14,22 @@ namespace MASFoundation.Internal.Data
             base(response, ResponseType.Json)
         {
             Sub = _responseJson.GetNamedString("sub");
-            Name = _responseJson.GetNamedString("name");
-            FamilyName = _responseJson.GetNamedString("family_name");
-            Nickname = _responseJson.GetNamedString("nickname");
-            PerferredUsername = _responseJson.GetNamedString("preferred_username");
-            Email = _responseJson.GetNamedString("email");
-            Phone = _responseJson.GetNamedString("phone");
-            Address = new AddressResponseData(_responseJson.GetNamedObject("address"));
+            Name = _responseJson.GetStringOrNull("name");
+            if (Name == null)
+            {
+                Name = _responseJson.GetStringOrNull("given_name");
+            }
+            FamilyName = _responseJson.GetStringOrNull("family_name");
+            Nickname = _responseJson.GetStringOrNull("nickname");
+            PerferredUsername = _responseJson.GetStringOrNull("preferred_username");
+            Email = _responseJson.GetStringOrNull("email");
+            Phone = _responseJson.GetStringOrNull("phone");
+
+            var addressObj = _responseJson.GetNamedObject("address");
+            if (addressObj != null)
+            {
+                Address = new AddressResponseData(addressObj);
+            }
         }
 
         public string Sub { get; private set; }
@@ -37,12 +46,18 @@ namespace MASFoundation.Internal.Data
     {
         public AddressResponseData(JsonObject jsonObject)
         {
-            Region = jsonObject.GetNamedString("region");
-            Country = jsonObject.GetNamedString("country");
+            Region = jsonObject.GetStringOrNull("region");
+            Country = jsonObject.GetStringOrNull("country");
+            StreetAddress = jsonObject.GetStringOrNull("street_address");
+            Locality = jsonObject.GetStringOrNull("locality");
+            PostalCode = jsonObject.GetStringOrNull("postal_code");
         }
 
         public string Region { get; private set; }
         public string Country { get; private set; }
+        public string StreetAddress { get; private set; }
+        public string Locality { get; private set; }
+        public string PostalCode { get; private set; }
     }
 
 }

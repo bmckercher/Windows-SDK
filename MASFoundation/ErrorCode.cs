@@ -39,6 +39,11 @@
         //
 
         /// <summary>
+        /// The configuration was null or empty
+        /// </summary>
+        ConfigurationLoadingFailedNullOrEmpty,
+
+        /// <summary>
         /// The configuration file could not be found
         /// </summary>
         ConfigurationLoadingFailedFileNotFound,

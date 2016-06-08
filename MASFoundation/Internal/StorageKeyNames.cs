@@ -8,6 +8,7 @@
         public static readonly string RegisteredCertSubject = "registeredCertSubject";
         public static readonly string DeviceInfo = "deviceInfo";
         public static readonly string ClientInfo = "clientInfo";
-        public static readonly string AccessInfo = "accessInfo";
+        public static readonly string ClientAccessInfo = "clientAccessInfo";
+        public static readonly string UserAccessInfo = "userAccessInfo";
     }
 }

@@ -124,8 +124,14 @@ namespace MASFoundation
             // Authorization providers not supported yet
             //var response = await MAGRequests.GetAuthorizationProviders(_config, Device);
 
+            // Load client access if client registration is requested
+            if (MAS.RegistrationKind == RegistrationKind.Client)
+            {
+                Client = await MASUser.InitializeAsync(config, MASDevice.Current, true);
+            }
+
             // Load user and any previous access token or idtoken info
-            await MASUser.InitializeAsync(config, MASDevice.Current);
+            await MASUser.InitializeAsync(config, MASDevice.Current, false);
 
             if (!MASDevice.Current.IsRegistered)
             {

@@ -1,0 +1,31 @@
+﻿<Page
+    x:Class="MagTestApp.Pages.StartupErrorPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MagTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="16"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="16"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="32"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="16"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="16"/>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock FontSize="14" MaxWidth="400"  Grid.Row="1" HorizontalAlignment="Center"  TextWrapping="Wrap" Text="Sorry!  There was an error trying to startup the application." />
+            <Button x:Name="RetryBtn" Content="Retry" Grid.Row="3" Width="200" Height="32" HorizontalAlignment="Center" Click="RetryBtn_Click"/>
+            <TextBox x:Name="ErrorText" TextWrapping="Wrap" Grid.Row="5" IsReadOnly="True" AcceptsReturn="True" ScrollViewer.VerticalScrollBarVisibility="Visible" />
+        </Grid>
+
+    </Grid>
+</Page>

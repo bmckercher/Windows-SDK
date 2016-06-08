@@ -1,4 +1,5 @@
 ﻿using Windows.Data.Json;
+using MASFoundation.Internal.Data;
 
 namespace MASFoundation.Internal.Http
 {

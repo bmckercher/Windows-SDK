@@ -1,6 +1,6 @@
 {
   "server": {
-    "hostname": "mobile-demo-mysql.dev.ca.com",
+    "hostnamezz": "mobile-demo-mysql.dev.ca.com",
     "port": 8443,
     "prefix": "",
     "server_certs": [

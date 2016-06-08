@@ -56,21 +56,6 @@
                     }
                 });
 
-                self._addClickHandler("device-logout-button", "logout", function () {
-
-                    if (MASFoundation.MASDevice.current) {
-                        MASFoundation.MASDevice.current.logoutAsync().done(function () {
-                            self._onLogMessage("Device logged out!");
-                        }, function (error) {
-                            var errorInfo = MASFoundation.MAS.errorLookup(error.number);
-                            self._onLogMessage("Device logged out failed! " + error.message);
-                        });
-                    }
-                    else {
-                        self._onLogMessage("Device not registered!");
-                    }
-                });
-
                 self._addClickHandler("user-logoff-button", "logoff", function () {
 
                     if (MASFoundation.MASUser.current) {

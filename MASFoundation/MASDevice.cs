@@ -1,6 +1,7 @@
 ﻿using MASFoundation.Internal;
 using MASFoundation.Internal.Data;
 using System;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Foundation;
@@ -28,14 +29,31 @@ namespace MASFoundation
         /// </summary>
         public static MASDevice Current { get; private set; }
 
+        static string _id;
         /// <summary>
         /// Device identifier
         /// </summary>
+        /// 
         public string Id
         {
             get
             {
-                return _deviceInfo.Id.ToString() + "1";
+                if (_id == null)
+                {
+                    try
+                    {
+                        // Use ASHWID if available for the device Id
+                        var hardwareToken = Windows.System.Profile.HardwareIdentification.GetPackageSpecificToken(null);
+                        var buffer = hardwareToken.Id.ToArray();
+                        _id = Convert.ToBase64String(buffer);
+                    }
+                    catch
+                    {
+                        _id = _deviceInfo.Id.ToString();
+                    }
+                }
+
+                return _id;
             }
         }
 
@@ -83,17 +101,6 @@ namespace MASFoundation
         public IAsyncAction UnregisterAsync()
         {
             return UnregisterInternalAsync().AsAsyncAction();
-        }
-
-        /// <summary>
-        /// Logout the device from the server.This will revoke the id_token from the server and local by calling log out endpoint
-        /// If clearLocal is defined as true, as part of log out process (revoking id_token),
-        /// this method will also clear access_token, and refresh_token that are stored in local.
-        /// </summary>
-        /// <param name="clearLocal">Boolean to indicate to clear local access_token and refresh_token or not.</param>
-        public IAsyncAction LogoutAsync(bool clearLocal)
-        {
-            return LogoutInternalAsync(clearLocal).AsAsyncAction();
         }
 
         #endregion
@@ -191,28 +198,6 @@ namespace MASFoundation
             {
                 ErrorFactory.ThrowError(ErrorCode.DeviceCouldNotBeDeregistered, e);
             }
-        }
-
-        async Task LogoutInternalAsync(bool clearLocal)
-        {
-            if (!MASApplication.IsRegistered)
-            {
-                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
-            }
-
-            if (!IsRegistered)
-            {
-                ErrorFactory.ThrowError(ErrorCode.ApplicationNotRegistered);
-            }
-
-            var currentUser = MASUser.Current;
-
-            if (currentUser == null || !currentUser.IsLoggedIn)
-            {
-                ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated);
-            }
-
-            await currentUser.LogoutDeviceAsync(clearLocal);
         }
 
         async Task FinalizeRegistrationAsync(RegisterResponseData data, string username)

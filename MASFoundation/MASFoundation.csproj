@@ -169,7 +169,7 @@
     <Compile Include="Internal\Http\HttpRequesterBase.cs" />
     <Compile Include="Internal\Http\MutualHttpsRequester.cs" />
     <Compile Include="Internal\Http\NormalHttpRequester.cs" />
-    <Compile Include="Internal\JsonExtensions.cs" />
+    <Compile Include="Internal\Data\JsonExtensions.cs" />
     <Compile Include="Internal\Logger.cs" />
     <Compile Include="Internal\MAGRequests.cs" />
     <Compile Include="Internal\StorageKeyNames.cs" />
@@ -196,6 +196,26 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\MASFoundation.rd.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="WindowsDesktop, Version=10.0.10586.0">
+      <Name>Windows Desktop Extensions for the UWP</Name>
+    </SDKReference>
+    <SDKReference Include="WindowsIoT, Version=10.0.10586.0">
+      <Name>Windows IoT Extensions for the UWP</Name>
+    </SDKReference>
+    <SDKReference Include="WindowsMobile, Version=10.0.10586.0">
+      <Name>Windows Mobile Extensions for the UWP</Name>
+    </SDKReference>
+    <SDKReference Include="WindowsTeam, Version=10.0.10240.0">
+      <Name>Windows Team Extensions for the UWP %28WindowsTeam, Version=10.0.10240.0%29</Name>
+    </SDKReference>
+    <SDKReference Include="WindowsTeam, Version=10.0.10586.0">
+      <Name>Windows Team Extensions for the UWP %28WindowsTeam, Version=10.0.10586.0%29</Name>
+    </SDKReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
@@ -205,7 +225,7 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>cd $(OutDir)
-$(SolutionDir)doxygen\doxygen.exe $(ProjectDir)masfoundation.doxygen</PostBuildEvent>
+$(ProjectDir)..\doxygen\doxygen.exe $(ProjectDir)masfoundation.doxygen</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

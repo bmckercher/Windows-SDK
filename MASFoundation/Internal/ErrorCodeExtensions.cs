@@ -41,6 +41,7 @@ namespace MASFoundation.Internal
                 //
                 // Configuration
                 //
+                case ErrorCode.ConfigurationLoadingFailedNullOrEmpty: return @"The configuration was null or empty";
                 case ErrorCode.ConfigurationLoadingFailedFileNotFound: return @"The configuration file could not be found";
                 case ErrorCode.ConfigurationLoadingFailedJsonSerialization: return @"The configuration file was found but the contents could not be loaded";
                 case ErrorCode.ConfigurationLoadingFailedJsonValidation:

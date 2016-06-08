@@ -90,45 +90,19 @@ namespace MASFoundation
             Current = null;
         }
 
-        internal static async Task InitializeAsync(Configuration config, MASDevice device)
+        internal static async Task<MASUser> InitializeAsync(Configuration config, MASDevice device, bool isAnonymous)
         {
-            var previousUser = new MASUser(config, device);
-            await previousUser.LoadAsync();
-            if (previousUser.IsLoggedIn)
-            {
-                MASUser.Current = previousUser;
-            }
-        }
+            var user = new MASUser(config, device);
+            user._isAnonymous = isAnonymous;
 
-        internal async Task LogoutDeviceAsync(bool clearLocal)
-        {
-            if (_idToken == null)
+            await user.LoadAsync();
+
+            if (!isAnonymous && user.IsLoggedIn)
             {
-                ErrorFactory.ThrowError(ErrorCode.DeviceNotLoggedIn);
+                MASUser.Current = user;
             }
 
-            await MAGRequests.LogoutSessionAsync(_config, MASDevice.Current, this, clearLocal);
-
-            if (clearLocal)
-            {
-                await RemoveAccessTokensAsync();
-
-                Current = null;
-            }
-            else
-            {
-                _idToken = null;
-                _idTokenType = null;
-
-                JsonObject obj = new JsonObject();
-                obj.SetNamedValue("accessToken", JsonValue.CreateStringValue(_accessToken));
-                obj.SetNamedValue("refreshToken", _refreshToken != null ? JsonValue.CreateStringValue(_refreshToken) : JsonValue.CreateNullValue());
-                obj.SetNamedValue("accessTokenExpiration", JsonValue.CreateNumberValue(_expireTimeUtc.ToBinary()));
-                obj.SetNamedValue("idToken", JsonValue.CreateNullValue());
-                obj.SetNamedValue("idTokenType", JsonValue.CreateNullValue());
-
-                await _storage.SetAsync(StorageKeyNames.AccessInfo, obj.Stringify());
-            }
+            return user;
         }
         
         internal async Task RequestAccessTokenAsync(string username, string password)
@@ -149,6 +123,8 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.UserAlreadyAuthenticated);
             }
 
+            _isAnonymous = true;
+
             var data = await MAGRequests.RequestAccessTokenAnonymouslyAsync(_config, _device);
             await UpdateTokens(data);
 
@@ -160,7 +136,20 @@ namespace MASFoundation
             // We have a refresh token, lets use that.
             if (_refreshToken != null)
             {
-                var data = await MAGRequests.RefreshAccessTokenAsync(_config, _device, _refreshToken);
+                RequestTokenResponseData data = null;
+                try
+                {
+                    data = await MAGRequests.RefreshAccessTokenAsync(_config, _device, _refreshToken);
+                }
+                catch
+                {
+                    // TODO If this fails try to use idToken to get access token
+                    if (_idToken != null && _idTokenType != null)
+                    {
+                        data = await MAGRequests.RequestAccessTokenFromIdTokenAsync(_config, _device, _idToken, _idTokenType);
+                    }
+                }
+
                 await UpdateTokens(data);
             }
             // We have an id token, lets use that to request an access token.
@@ -218,6 +207,7 @@ namespace MASFoundation
                 // Throw user not authenticated error
                 if (_isAnonymous)
                 {
+                    // TODO Double check the error here for client registration flow
                     ErrorFactory.ThrowError(ErrorCode.DeviceNotLoggedIn);
                 }
                 else
@@ -243,19 +233,26 @@ namespace MASFoundation
 
         #endregion
 
+        #region Internal Properties
+
+        internal string IdToken
+        {
+            get { return _idToken; }
+        }
+
+        internal string IdTokenType
+        {
+            get { return _idTokenType; }
+        }
+
+        #endregion
+
         #region Private Methods
 
         void ClearAccessTokens()
         {
             _accessToken = _refreshToken = _idToken = _idTokenType = null;
             _expireTimeUtc = DateTime.MinValue;
-        }
-
-        async Task RemoveAccessTokensAsync()
-        {
-            ClearAccessTokens();
-
-            await SecureStorage.RemoveAsync(StorageKeyNames.AccessInfo);
         }
 
         async Task<bool> CheckAccessInternalAsync()
@@ -361,13 +358,18 @@ namespace MASFoundation
             {
                 return (IUserInfo)await MAGRequests.GetUserInfoAsync(_config, _device, this);
             }
-            catch (MASException exp)
+            catch (Exception exp)
             {
-                if (exp.MASErrorCode != ErrorCode.TokenAccessExpired)
+                var masException = exp.InnerException as MASException;
+                if (masException?.MASErrorCode != ErrorCode.TokenAccessExpired)
                 {
                     throw exp;
                 }
             }
+
+            // Our access token is expired
+            _accessToken = null;
+            await SaveTokensAsync();
 
             await RefreshAccessTokenAsync();
 
@@ -391,14 +393,23 @@ namespace MASFoundation
                 ErrorFactory.ThrowError(ErrorCode.UserNotAuthenticated);
             }
 
-            await MAGRequests.RevokeAccessTokenAsync(_config, _device, this);
+            if (_idToken != null && _config.Mag.MobileSdk.IsSSOEnabled)
+            {
+                await MAGRequests.LogoutSessionAsync(_config, MASDevice.Current, this);
+            }
+            else
+            {
+                await MAGRequests.RevokeAccessTokenAsync(_config, _device, this);
+            }
 
             await RemoveAccessTokensAsync();
+
+            Current = null;
         }
 
         async Task LoadAsync()
         {
-            var accessInfo = await _storage.GetTextAsync(StorageKeyNames.AccessInfo);
+            var accessInfo = await _storage.GetTextAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo);
             if (accessInfo != null)
             {
                 try
@@ -423,23 +434,38 @@ namespace MASFoundation
             }
         }
 
+        async Task SaveTokensAsync()
+        {
+            JsonObject obj = new JsonObject();
+            obj.SetNamedValue("accessToken", _accessToken.ToJsonValue());
+            obj.SetNamedValue("refreshToken", _refreshToken.ToJsonValue());
+            obj.SetNamedValue("accessTokenExpiration", JsonValue.CreateNumberValue(_expireTimeUtc.ToBinary()));
+            obj.SetNamedValue("idToken", _idToken.ToJsonValue());
+            obj.SetNamedValue("idTokenType", _idTokenType.ToJsonValue());
+
+            await _storage.SetAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo, obj.Stringify());
+        }
+
+        async Task RemoveAccessTokensAsync()
+        {
+            ClearAccessTokens();
+
+            await SecureStorage.RemoveAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo);
+        }
+
         async Task UpdateTokens(RequestTokenResponseData data)
         {
             _accessToken = data.AccessToken;
             _refreshToken = data.RefreshToken;
             _expireTimeUtc = DateTime.UtcNow.AddSeconds(data.ExpiresIn);
-            
-            _idToken = data.IdToken;
-            _idTokenType = data.IdTokenType;
 
-            JsonObject obj = new JsonObject();
-            obj.SetNamedValue("accessToken", JsonValue.CreateStringValue(_accessToken));
-            obj.SetNamedValue("refreshToken", _refreshToken != null ? JsonValue.CreateStringValue(_refreshToken) : JsonValue.CreateNullValue());
-            obj.SetNamedValue("accessTokenExpiration", JsonValue.CreateNumberValue(_expireTimeUtc.ToBinary()));
-            obj.SetNamedValue("idToken", _idToken != null ? JsonValue.CreateStringValue(_idToken) : JsonValue.CreateNullValue());
-            obj.SetNamedValue("idTokenType", _idTokenType != null ? JsonValue.CreateStringValue(_idTokenType) : JsonValue.CreateNullValue());
+            if (data.IdToken != null && data.IdTokenType != null)
+            {
+                _idToken = data.IdToken;
+                _idTokenType = data.IdTokenType;
+            }
 
-            await _storage.SetAsync(StorageKeyNames.AccessInfo, obj.Stringify());
+            await SaveTokensAsync();
         }
 
         #endregion

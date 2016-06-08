@@ -85,6 +85,11 @@ namespace MASFoundation
         /// </exception>
         public static IAsyncAction StartWithConfigAsync(string configText)
         {
+            if (string.IsNullOrWhiteSpace(configText))
+            {
+                ErrorFactory.ThrowError(ErrorCode.ConfigurationLoadingFailedNullOrEmpty);
+            }
+
             return StartInternalAsync(configText).AsAsyncAction();
         }
 
