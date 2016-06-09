@@ -166,9 +166,6 @@ namespace MASUnitTestApp
 
             await MASUser.Current.LogoffAsync();
             Assert.IsTrue(MASUser.Current?.IsLoggedIn != true);
-
-            // TODO if the user logs out is the device still registered?
-            //Assert.True(MASDevice.Current?.IsRegistered != true);
         }
 
         [TestMethod]
@@ -217,7 +214,7 @@ namespace MASUnitTestApp
                 return;
             }
 
-            Assert.IsTrue(false);
+            Assert.Fail("No exception was thrown.");
         }
 
         // This function just tries to clean up any previous registartions for unit testing.
