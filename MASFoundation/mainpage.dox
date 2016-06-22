@@ -1,6 +1,40 @@
 ﻿/**
 \mainpage Getting started
 
+
+### Building SDK ###
+
+To build the SDK follow these steps
+
+1. Install Visual Studio 2010. Make sure that 'Universial Windows App Development Tools' is included in your install.
+2. Open MagTestApp solution and build.
+3. Depending on your configuration (Debug or Release) and CPU.  The build output folder will be different.  
+	+ MASFoundation SDK output folder has this relative location: "MASFoundation\bin\'CPU'\'Debug or Release'".
+	+ This folder will include .winmd and generated documentation in "Docs\html".  The .winmd file contains both metadata and implementation.  This can be used as a reference for other projects.
+	+ MASTestApp is a sample application showing usage of the MASFoundation SDK.
+
+	
+### Unit testing ###
+
+MASUnitTestApp contains MASFoundation unit tests in file MASFoundationTests.cs.  These tests can be run via visual studio or by command line.
+
+To run with Visual Studio:
+1. Click on the Test menu
+2. Then select Windows, Test Explorer
+3. Test Explorer will open and search for tests in the MASUnitTestApp project.
+4. Once all tests are found, select Run All to run all the found tests.
+5. Progress and results are reported as tests are run.
+
+To run via command line
+1. Start Visual studio 2015 command prompt
+2. First build MASUnitTestApp with msbuild: msbuild MASUnitTestApp.csproj.  You can pass in additional arguments to specify Debug or Release and CPU type.
+3. Install MASUnitTestApp's certificate 'MASUnitTestApp_TemporaryKey.pfx' to your computer's Trusted Root Certificate Authorities store
+4. Run vstest.console.exe 'Path to the appx of MASUnitTestApp'  For example: vstest.console.exe "C:\GitHub\Windows-SDK\MASUnitTestApp\AppPackages\MASUnitTestApp_1.0.0.0_x86_Debug_Test\MASUnitTestApp_1.0.0.0_x86_Debug.appx" 
+5. Progress and results are reported as tests are run.
+
+
+### Starting SDK ###
+
 We should always start the SDK with [MAS.StartAsync](@ref MASFoundation::MAS::StartAsync) or [MAS.StartWithConfigAsync](@ref MASFoundation::MAS::StartWithConfigAsync).  This will load the configuration file and attempt to do device registration if it hasn't been done already.
 
 The `StartAsync` must be used with a msso_config.json file with the file name specified in property [MAS.ConfigFileName](@ref MASFoundation::MAS::ConfigFileName).  `StartWithConfigAsync` is just like `StartAsync` but allows the caller to pass in the contents of the configuration file instead.
@@ -43,7 +77,7 @@ catch (Exception exp)
 After succesful registration, applications can:
 	+ Access the current user and device.  [MASUser.Current](@ref MASFoundation::MASUser::Current) and [MASDevice.Current](@ref MASFoundation::MASDevice::Current).
 	+ Make authenticated network requests with [MAS.GetFromAsync](@ref MASFoundation::MAS::GetFromAsync), [MAS.DeleteFromAsync](@ref MASFoundation::MAS::DeleteFromAsync), [MAS.PostToAsync](@ref MASFoundation::MAS::PostToAsync), [MAS.PutToAsync](@ref MASFoundation::MAS::PutToAsync), and [MAS.PatchToAsync](@ref MASFoundation::MAS::PatchToAsync)
-	+ Logout and unregister the device.  [MASDevice.Current.LogoutAsync](@ref MASFoundation::MASDevice::LogoutAsync) and [MASDevice.Current.LogoutAsync](@ref MASFoundation::MASDevice::UnregisterAsync)
+	+ Unregister the device.  [MASDevice.Current.UnregisterAsync](@ref MASFoundation::MASDevice::UnregisterAsync)
 	+ Get user information and logoff the user.  [MASUser.Current.GetInfoAsync](@ref MASFoundation::MASUser::GetInfoAsync) and [MASUser.Current.LogoffAsync](@ref MASFoundation::MASUser::LogoffAsync)
 	
 ### Debugging ###
