@@ -1,4 +1,4 @@
-# Contribute to CA Mobile App Services SDK
+# Contribute to CA Windows Mobile SDK
 Contributions are welcome and much appreciated. Just follow these easy steps to contribute.
 
 ## Our Development Process
