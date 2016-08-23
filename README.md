@@ -1,8 +1,8 @@
 # Windows Mobile SDK
-## for CA Mobile App Services and CA Mobile API Gateway
+## for CA Mobile API Gateway
 
 ## Overview
-The Windows Mobile SDK gives developers simple and secure access to the services of CA Mobile API Gateway and CA Mobile App Services. 
+The Windows Mobile SDK gives developers simple and secure access to the services of CA Mobile API Gateway. 
 For more information about our mobile products see [the website][mas.ca.com].
 
 ## Get Started
