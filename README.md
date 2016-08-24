@@ -8,13 +8,13 @@ For more information about our mobile products see [the website][mas.ca.com].
 ## Get Started
 Follow our step-by-step guide to [get started][get-started].
 
-### Building SDK ###
-
 To build the SDK follow these steps
 
 1. Install Visual Studio 2010. Make sure that 'Universial Windows App Development Tools' is included in your install.
-2. Open MagTestApp solution and build.
-3. Depending on your configuration (Debug or Release) and CPU.  The build output folder will be different.  
+2. Download the latest version of doxygen binaries from [here][doxygen]. Doxygen utility is used for generating documentation from source code. Make sure that there are four binaries in the archieve viz. doxygen.exe, doxyindexer.exe, doxysearch.cgi.exe, libclang.dll.
+3. Extract all the four binaries to the empty folder "doxygen" in the project.
+4. Open MagTestApp solution and build.
+5. Depending on your configuration (Debug or Release) and CPU.  The build output folder will be different.  
 	+ MASFoundation SDK output folder has this relative location: "MASFoundation\bin\'CPU'\'Debug or Release'".
 	+ This folder will include .winmd and generated documentation in "Docs\html".  The .winmd file contains both metadata and implementation.  This can be used as a reference for other projects.
 	+ MASTestApp is a sample application showing usage of the MASFoundation SDK.
@@ -148,3 +148,4 @@ of the MIT license. See the [LICENSE][license-link] file for details.
 [get-started]: http://mas.ca.com/get-started
 [contributing]: /CONTRIBUTING.md
 [license-link]: /LICENSE
+[doxygen]: https://sourceforge.net/projects/doxygen/files
