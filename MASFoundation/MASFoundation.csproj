@@ -159,6 +159,7 @@
     <Compile Include="Internal\Http\HttpResponseBaseData.cs" />
     <Compile Include="Internal\Data\Config\ServerConfigData.cs" />
     <Compile Include="Internal\PropertyList.cs" />
+    <Compile Include="Internal\SharedSecureStorage.cs" />
     <Compile Include="MASDevice.cs" />
     <Compile Include="Internal\ErrorFactory.cs" />
     <Compile Include="ErrorCode.cs" />

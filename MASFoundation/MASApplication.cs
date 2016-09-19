@@ -181,6 +181,8 @@ namespace MASFoundation
 
             await SecureStorage.ResetAsync();
 
+            await SharedSecureStorage.ResetAsync();
+
             await CertManager.UninstallAsync();
 
             HttpRequestFactory.CancelAll();

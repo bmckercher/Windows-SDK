@@ -30,7 +30,7 @@ namespace MASFoundation.Internal
 {
     internal class CertManager
     {
-        public CertManager(SecureStorage storage)
+        public CertManager(SharedSecureStorage storage)
         {
             _storage = storage;
         }
@@ -135,7 +135,7 @@ namespace MASFoundation.Internal
         public static async Task UninstallAsync()
         {
             // Windows 10 doesn't support an uninstall method at the moment.  Let's forget about the cert ourselves.
-            await SecureStorage.RemoveAsync(StorageKeyNames.RegisteredCertSubject);
+            await SharedSecureStorage.RemoveAsync(StorageKeyNames.RegisteredCertSubject);
         }
 
         #region Bouncy castle member variables
@@ -144,6 +144,6 @@ namespace MASFoundation.Internal
         static AsymmetricKeyParameter _privateKey;
         #endregion
 
-        SecureStorage _storage;
+        SharedSecureStorage _storage;
     }
 }

@@ -25,7 +25,7 @@ namespace MASFoundation
         internal MASDevice(Configuration config)
         {
             _config = config;
-            _storage = new SecureStorage();
+            _storage = new SharedSecureStorage();
             _certManager = new CertManager(_storage);
         }
 
@@ -319,7 +319,7 @@ namespace MASFoundation
             {
                 RegisteredUsername = null;
                 Certificate = null;
-                await SecureStorage.RemoveAsync(StorageKeyNames.DeviceInfo);
+                await SharedSecureStorage.RemoveAsync(StorageKeyNames.DeviceInfo);
             }
             else
             {
@@ -335,7 +335,7 @@ namespace MASFoundation
         string _clientSecret;
         DateTime _clientExpiration = DateTime.MinValue;
         Configuration _config;
-        SecureStorage _storage;
+        SharedSecureStorage _storage;
         CertManager _certManager;
         EasClientDeviceInformation _deviceInfo = new EasClientDeviceInformation();
 

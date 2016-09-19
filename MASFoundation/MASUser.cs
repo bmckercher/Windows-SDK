@@ -24,6 +24,7 @@ namespace MASFoundation
             _config = config;
             _device = device;
             _storage = new SecureStorage();
+            _sharedStorage = new SharedSecureStorage();
         }
 
         #region Public Properties
@@ -255,10 +256,21 @@ namespace MASFoundation
 
         #region Private Methods
 
+        void ClearAllTokens()
+        {
+            ClearAccessTokens();
+            ClearIdTokens();
+        }
+
         void ClearAccessTokens()
         {
-            _accessToken = _refreshToken = _idToken = _idTokenType = null;
+            _accessToken = _refreshToken = null;
             _expireTimeUtc = DateTime.MinValue;
+        }
+
+        void ClearIdTokens()
+        {
+            _idToken = _idTokenType = null;
         }
 
         async Task<bool> CheckAccessInternalAsync()
@@ -415,6 +427,7 @@ namespace MASFoundation
 
         async Task LoadAsync()
         {
+            await LoadIdTokenAsync();
             var accessInfo = await _storage.GetTextAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo);
             if (accessInfo != null)
             {
@@ -425,9 +438,6 @@ namespace MASFoundation
                     _accessToken = jsonObj.GetNamedString("accessToken");
                     _refreshToken = jsonObj.GetStringOrNull("refreshToken");
                     _expireTimeUtc = DateTime.FromBinary((long)jsonObj.GetNamedNumber("accessTokenExpiration"));
-
-                    _idToken = jsonObj.GetStringOrNull("idToken");
-                    _idTokenType = jsonObj.GetStringOrNull("idTokenType");
                 }
                 catch
                 {
@@ -440,22 +450,55 @@ namespace MASFoundation
             }
         }
 
+        async Task LoadIdTokenAsync()
+        {
+            var accessInfo = await _sharedStorage.GetTextAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo);
+            if (accessInfo != null)
+            {
+                try
+                {
+                    var jsonObj = JsonObject.Parse(accessInfo);
+
+                    _idToken = jsonObj.GetStringOrNull("idToken");
+                    _idTokenType = jsonObj.GetStringOrNull("idTokenType");
+                }
+                catch
+                {
+                    ClearAllTokens();
+                }
+            }
+            else
+            {
+                ClearAllTokens();
+            }
+        }
+
         async Task SaveTokensAsync()
         {
+            await SaveIdTokenAsync();
+
             JsonObject obj = new JsonObject();
             obj.SetNamedValue("accessToken", _accessToken.ToJsonValue());
             obj.SetNamedValue("refreshToken", _refreshToken.ToJsonValue());
             obj.SetNamedValue("accessTokenExpiration", JsonValue.CreateNumberValue(_expireTimeUtc.ToBinary()));
-            obj.SetNamedValue("idToken", _idToken.ToJsonValue());
-            obj.SetNamedValue("idTokenType", _idTokenType.ToJsonValue());
 
             await _storage.SetAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo, obj.Stringify());
         }
 
+        async Task SaveIdTokenAsync()
+        {
+            JsonObject obj = new JsonObject();
+            obj.SetNamedValue("idToken", _idToken.ToJsonValue());
+            obj.SetNamedValue("idTokenType", _idTokenType.ToJsonValue());
+
+            await _sharedStorage.SetAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo, obj.Stringify());
+        }
+
         async Task RemoveAccessTokensAsync()
         {
-            ClearAccessTokens();
+            ClearAllTokens();
 
+            await SharedSecureStorage.RemoveAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo);
             await SecureStorage.RemoveAsync(_isAnonymous ? StorageKeyNames.ClientAccessInfo : StorageKeyNames.UserAccessInfo);
         }
 
@@ -485,6 +528,7 @@ namespace MASFoundation
         string _idTokenType;
         Configuration _config;
         MASDevice _device;
+        SharedSecureStorage _sharedStorage;
         SecureStorage _storage;
         bool _isAnonymous;
 
