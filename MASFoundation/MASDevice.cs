@@ -4,10 +4,11 @@ This software may be modified and distributed under the terms
 of the MIT license. See the LICENSE file for details.
 */
 
-﻿using MASFoundation.Internal;
+using MASFoundation.Internal;
 using MASFoundation.Internal.Data;
 using System;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Foundation;
@@ -51,7 +52,8 @@ namespace MASFoundation
                         // Use ASHWID if available for the device Id
                         var hardwareToken = Windows.System.Profile.HardwareIdentification.GetPackageSpecificToken(null);
                         var buffer = hardwareToken.Id.ToArray();
-                        _id = Convert.ToBase64String(buffer);
+                        string base64DeviceId = Convert.ToBase64String(buffer);
+                        _id = Regex.Replace(base64DeviceId, @"[^0-9a-zA-Z]+", "");
                     }
                     catch
                     {
