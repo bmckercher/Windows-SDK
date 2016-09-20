@@ -8,6 +8,8 @@ using System;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Security.Cryptography;
+using Windows.Security.Cryptography.DataProtection;
 using Windows.Storage;
 using Windows.Storage.Streams;
 
@@ -59,7 +61,8 @@ namespace MASFoundation.Internal
                     string content = string.Empty;
                     if (storageFolder != null)
                     {
-                        content = await FileIO.ReadTextAsync(storageFile);
+                        var protectedContent = await FileIO.ReadBufferAsync(storageFile);
+                        content = await UnprotectAsync(protectedContent);
                     }
                     return Convert.FromBase64String(content).AsBuffer();
                 }
@@ -94,7 +97,7 @@ namespace MASFoundation.Internal
                 string content = Convert.ToBase64String(bytes);
                 StorageFolder storageFolder = await GetPublisherStorageFolder("MASFoundation");
                 StorageFile storageFile = await storageFolder.CreateFileAsync(key, CreationCollisionOption.OpenIfExists);
-                await FileIO.WriteTextAsync(storageFile, content);
+                await FileIO.WriteBufferAsync(storageFile, await ProtectAsync(content));
             });
         }
 
@@ -145,6 +148,39 @@ namespace MASFoundation.Internal
                 subFolder = await storageFolder.CreateFolderAsync(resourceFolderName, CreationCollisionOption.OpenIfExists);
             }
             return subFolder;
+        }
+
+        async Task<IBuffer> ProtectAsync(string content)
+        {
+            // Create a DataProtectionProvider object for the specified descriptor.
+            DataProtectionProvider Provider = new DataProtectionProvider("LOCAL=user");
+
+            // Encode the plaintext input message to a buffer.
+            IBuffer buffMsg = CryptographicBuffer.ConvertStringToBinary(content, BinaryStringEncoding.Utf8);
+
+            // Encrypt the message.
+            IBuffer buffProtected = await Provider.ProtectAsync(buffMsg);
+
+            // Execution of the SampleProtectAsync function resumes here
+            // after the awaited task (Provider.ProtectAsync) completes.
+            return buffProtected;
+        }
+
+        async Task<string> UnprotectAsync(IBuffer buffProtected)
+        {
+            // Create a DataProtectionProvider object.
+            DataProtectionProvider Provider = new DataProtectionProvider();
+
+            // Decrypt the protected message specified on input.
+            IBuffer buffUnprotected = await Provider.UnprotectAsync(buffProtected);
+
+            // Execution of the SampleUnprotectData method resumes here
+            // after the awaited task (Provider.UnprotectAsync) completes
+            // Convert the unprotected message from an IBuffer object to a string.
+            string content = CryptographicBuffer.ConvertBinaryToString(BinaryStringEncoding.Utf8, buffUnprotected);
+
+            // Return the plaintext string.
+            return content;
         }
     }
 }
