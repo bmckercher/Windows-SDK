@@ -41,7 +41,7 @@ of the MIT license. See the LICENSE file for details.
                 });
 
                 self._addClickHandler("login-button", "login", function() {
-                    MASFoundation.MASUser.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
+                    MASFoundation.MASUser.loginAsync("zoljo01", "IdentityMine").done(function () {
                         self._onLogMessage("User logged in!");
                     }, function (error) {
                         var errorInfo = MASFoundation.MAS.errorLookup(error.number);
@@ -162,7 +162,7 @@ of the MIT license. See the LICENSE file for details.
         },
 
         _onLoginRequested: function () {
-            MASFoundation.MASUser.loginAsync("winsdktest2", "P@$$w0rd01").done(function () {
+            MASFoundation.MASUser.loginAsync("zoljo01", "IdentityMine").done(function () {
                 self._onLogMessage("User logged in!");
             }, function (error) {
                 self._onLogMessage("User login failed!");

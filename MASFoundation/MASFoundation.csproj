@@ -223,6 +223,10 @@
       <HintPath>..\Dependencies\crypto.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="MASFoundationDef\MASFoundation.d.ts" />
+    <TypeScriptCompile Include="MASFoundationDef\winrt.d.ts" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
