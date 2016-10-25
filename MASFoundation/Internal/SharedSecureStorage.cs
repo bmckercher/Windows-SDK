@@ -17,6 +17,12 @@ namespace MASFoundation.Internal
 {
     internal class SharedSecureStorage
     {
+        string folderName;
+
+        internal SharedSecureStorage() { folderName = "MASFoundation"; }
+
+        internal SharedSecureStorage(string folderName) { this.folderName = folderName; }
+
         public async Task<string> GetTextAsync(string key)
         {
             var data = await GetBytesAsync(key);
@@ -54,7 +60,7 @@ namespace MASFoundation.Internal
         {
             try
             {
-                StorageFolder storageFolder = await GetPublisherStorageFolder("MASFoundation");
+                StorageFolder storageFolder = await GetPublisherStorageFolder(folderName);
                 StorageFile storageFile = await storageFolder.GetFileAsync(key);
                 string content = string.Empty;
                 if (storageFolder != null)
@@ -92,19 +98,19 @@ namespace MASFoundation.Internal
             {
                 var bytes = buffer.ToArray();
                 string content = Convert.ToBase64String(bytes);
-                StorageFolder storageFolder = await GetPublisherStorageFolder("MASFoundation");
+                StorageFolder storageFolder = await GetPublisherStorageFolder(folderName);
                 StorageFile storageFile = await storageFolder.CreateFileAsync(key, CreationCollisionOption.OpenIfExists);
                 await FileIO.WriteBufferAsync(storageFile, await ProtectAsync(content));
             });
         }
 
-        public static Task RemoveAsync(string key)
+        public static Task RemoveAsync(string key, string subFolderName = "MASFoundation")
         {
             return Task.Run(async () =>
             {
                 try
                 {
-                    StorageFolder storageFolder = await GetPublisherStorageFolder("MASFoundation");
+                    StorageFolder storageFolder = await GetPublisherStorageFolder(subFolderName);
                     StorageFile storageFile = await storageFolder.GetFileAsync(key);
                     await storageFile.DeleteAsync(StorageDeleteOption.PermanentDelete);
                 }
@@ -114,13 +120,13 @@ namespace MASFoundation.Internal
             });
         }
 
-        public static Task ResetAsync()
+        public static Task ResetAsync(string subFolderName = "MASFoundation")
         {
             return Task.Run(async () =>
             {
                 try
                 {
-                    StorageFolder storageFolder = await GetPublisherStorageFolder("MASFoundation");
+                    StorageFolder storageFolder = await GetPublisherStorageFolder(subFolderName);
                     await storageFolder.DeleteAsync(StorageDeleteOption.PermanentDelete);
                 }
                 catch

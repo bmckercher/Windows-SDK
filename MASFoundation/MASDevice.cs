@@ -27,6 +27,7 @@ namespace MASFoundation
             _config = config;
             _storage = new SharedSecureStorage();
             _certManager = new CertManager(_storage);
+            _deviceInfoStorage = new SharedSecureStorage("DeviceInfoStorage");
         }
 
         #region Public Properties
@@ -36,34 +37,11 @@ namespace MASFoundation
         /// </summary>
         public static MASDevice Current { get; private set; }
 
-        static string _id;
         /// <summary>
         /// Device identifier
         /// </summary>
         /// 
-        public string Id
-        {
-            get
-            {
-                if (_id == null)
-                {
-                    try
-                    {
-                        // Use ASHWID if available for the device Id
-                        var hardwareToken = Windows.System.Profile.HardwareIdentification.GetPackageSpecificToken(null);
-                        var buffer = hardwareToken.Id.ToArray();
-                        string base64DeviceId = Convert.ToBase64String(buffer);
-                        _id = Regex.Replace(base64DeviceId, @"[^0-9a-zA-Z]+", "");
-                    }
-                    catch
-                    {
-                        _id = _deviceInfo.Id.ToString();
-                    }
-                }
-
-                return _id;
-            }
-        }
+        public string Id { get; private set; }
 
         /// <summary>
         /// Device name
@@ -229,6 +207,16 @@ namespace MASFoundation
 
         async Task LoadAsync()
         {
+
+            //Since the device Id was different for different app of same publisher we had to fallback by saving the Device to the publisher shared storage and then share them between apps
+            //Issue: https://social.msdn.microsoft.com/Forums/windowsapps/en-US/78edc38b-41b9-4fe2-9bbf-20f282ddc25c/uwphow-to-make-2-apps-part-of-the-same-package?forum=wpdevelop
+            Id = await _deviceInfoStorage.GetTextAsync(StorageKeyNames.DeviceId);
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = CreateHardwareId();
+                await _deviceInfoStorage.SetAsync(StorageKeyNames.DeviceId, Id);
+            }
+
             // Install any certificate found in the server certs.
             // This is required for MAG SSL with alternative certificate authorities.
             if (_config.Server.ServerCerts != null)
@@ -327,6 +315,28 @@ namespace MASFoundation
             }
         }
 
+        private string CreateHardwareId()
+        {
+            string id = null;
+            if (id == null)
+            {
+                try
+                {
+                    // Use ASHWID if available for the device Id
+                    var hardwareToken = Windows.System.Profile.HardwareIdentification.GetPackageSpecificToken(null);
+                    var buffer = hardwareToken.Id.ToArray();
+                    string base64DeviceId = Convert.ToBase64String(buffer);
+                    id = Regex.Replace(base64DeviceId, @"[^0-9a-zA-Z]+", "");
+                }
+                catch
+                {
+                    id = _deviceInfo.Id.ToString();
+                }
+            }
+
+            return id;
+        }
+
         #endregion
 
         #region Fields
@@ -336,6 +346,7 @@ namespace MASFoundation
         DateTime _clientExpiration = DateTime.MinValue;
         Configuration _config;
         SharedSecureStorage _storage;
+        SharedSecureStorage _deviceInfoStorage;
         CertManager _certManager;
         EasClientDeviceInformation _deviceInfo = new EasClientDeviceInformation();
 
