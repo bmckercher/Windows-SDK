@@ -313,7 +313,7 @@ namespace MASFoundation
             }
 
             // check if we have a certificate
-            Certificate = await _certManager.GetAsync();
+            Certificate = await _certManager.GetIfExistsAsync();
 
             if (Certificate == null || DateTime.Now > Certificate.ValidTo)
             {

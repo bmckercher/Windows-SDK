@@ -50,27 +50,24 @@ namespace MASFoundation.Internal
             return SetAsync(key, BitConverter.GetBytes(date.ToBinary()));
         }
 
-        public Task<IBuffer> GetIBufferAsync(string key)
+        public async Task<IBuffer> GetIBufferAsync(string key)
         {
-            return Task.Run<IBuffer>(async () =>
+            try
             {
-                try
+                StorageFolder storageFolder = await GetPublisherStorageFolder("MASFoundation");
+                StorageFile storageFile = await storageFolder.GetFileAsync(key);
+                string content = string.Empty;
+                if (storageFolder != null)
                 {
-                    StorageFolder storageFolder = await GetPublisherStorageFolder("MASFoundation");
-                    StorageFile storageFile = await storageFolder.GetFileAsync(key);
-                    string content = string.Empty;
-                    if (storageFolder != null)
-                    {
-                        var protectedContent = await FileIO.ReadBufferAsync(storageFile);
-                        content = await UnprotectAsync(protectedContent);
-                    }
-                    return Convert.FromBase64String(content).AsBuffer();
+                    var protectedContent = await FileIO.ReadBufferAsync(storageFile);
+                    content = await UnprotectAsync(protectedContent);
                 }
-                catch
-                {
-                    return null;
-                }
-            });
+                return Convert.FromBase64String(content).AsBuffer();
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task<byte[]> GetBytesAsync(string key)

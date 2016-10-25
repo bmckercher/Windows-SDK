@@ -16,5 +16,6 @@ of the MIT license. See the LICENSE file for details.
         public static readonly string ClientInfo = "clientInfo";
         public static readonly string ClientAccessInfo = "clientAccessInfo";
         public static readonly string UserAccessInfo = "userAccessInfo";
+        public static readonly string PrivateKey = "privateKey";
     }
 }

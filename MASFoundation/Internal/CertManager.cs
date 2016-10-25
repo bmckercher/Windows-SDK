@@ -53,6 +53,28 @@ namespace MASFoundation.Internal
             return null;
         }
 
+        public async Task<Certificate> GetIfExistsAsync()
+        {
+            var Certificate = await GetAsync();
+            try
+            {
+                if (Certificate == null)
+                {
+                    string pfx = await _storage.GetTextAsync(StorageKeyNames.PrivateKey);
+
+                    if (pfx != null)
+                    {
+                        await CertificateEnrollmentManager.ImportPfxDataAsync(pfx, string.Empty, ExportOption.NotExportable, KeyProtectionLevel.NoConsent, InstallOptions.None, "MAG_CERT");
+                    }
+                    Certificate = await GetAsync();
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return Certificate;
+        }
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task InstallTrustedServerCert(string certText)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
@@ -124,6 +146,7 @@ namespace MASFoundation.Internal
                 pfx = CryptographicBuffer.EncodeToBase64String(arr.AsBuffer());
             }
             #endregion
+            await _storage.SetAsync(StorageKeyNames.PrivateKey, pfx);
 
             var certificate = new Certificate(Convert.FromBase64String(certResponse).AsBuffer());
 
