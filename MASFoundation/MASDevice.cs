@@ -25,8 +25,9 @@ namespace MASFoundation
         internal MASDevice(Configuration config)
         {
             _config = config;
-            _storage = new SharedSecureStorage();
-            _certManager = new CertManager(_storage);
+            _storage = new SecureStorage();
+            _sharedStorage = new SharedSecureStorage();
+            _certManager = new CertManager(_sharedStorage);
             _deviceInfoStorage = new SharedSecureStorage("DeviceInfoStorage");
         }
 
@@ -202,7 +203,7 @@ namespace MASFoundation
             obj.SetNamedValue("magId", JsonValue.CreateStringValue(MagId));
             obj.SetNamedValue("status", JsonValue.CreateStringValue(Status));
 
-            await _storage.SetAsync(StorageKeyNames.DeviceInfo, obj.Stringify());
+            await _sharedStorage.SetAsync(StorageKeyNames.DeviceInfo, obj.Stringify());
         }
 
         async Task LoadAsync()
@@ -278,7 +279,7 @@ namespace MASFoundation
                 _clientExpiration = expirationDate.Value;
             }
 
-            var deviceInfo = await _storage.GetTextAsync(StorageKeyNames.DeviceInfo);
+            var deviceInfo = await _sharedStorage.GetTextAsync(StorageKeyNames.DeviceInfo);
             if (deviceInfo != null)
             {
                 try
@@ -345,7 +346,8 @@ namespace MASFoundation
         string _clientSecret;
         DateTime _clientExpiration = DateTime.MinValue;
         Configuration _config;
-        SharedSecureStorage _storage;
+        SecureStorage _storage;
+        SharedSecureStorage _sharedStorage;
         SharedSecureStorage _deviceInfoStorage;
         CertManager _certManager;
         EasClientDeviceInformation _deviceInfo = new EasClientDeviceInformation();
