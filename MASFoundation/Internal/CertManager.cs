@@ -148,11 +148,17 @@ namespace MASFoundation.Internal
             #endregion
             await _storage.SetAsync(StorageKeyNames.PrivateKey, pfx);
 
-            var certificate = new Certificate(Convert.FromBase64String(certResponse).AsBuffer());
-
             await CertificateEnrollmentManager.ImportPfxDataAsync(pfx, password, ExportOption.NotExportable, KeyProtectionLevel.NoConsent, InstallOptions.None, "MAG_CERT");
 
-            await _storage.SetAsync(StorageKeyNames.RegisteredCertSubject, certificate.Subject);
+            // Store the registered cert subject
+            if (cert.SubjectDN != null)
+            {
+                var valueList = cert.SubjectDN.GetValueList(X509Name.CN);
+                if (valueList.Count > 0)
+                {
+                    await _storage.SetAsync(StorageKeyNames.RegisteredCertSubject, (string)valueList[0]);
+                }
+            }
         }
 
         public static async Task UninstallAsync()
