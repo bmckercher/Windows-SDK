@@ -1,54 +1,50 @@
 ﻿{
   "server": {
-    "hostname": "test.pulsenow.co.uk",
-    "port": 443,
+    "hostname": "mobile-demo-mysql.dev.ca.com",
+    "port": 8443,
     "prefix": "",
     "server_certs": [
       [
         "-----BEGIN CERTIFICATE-----",
-        "MIIE5zCCA8+gAwIBAgIQaiKciMSK28o9HdLXmK5EADANBgkqhkiG9w0BAQsFADB+MQswCQYDVQQG",
-        "EwJVUzEdMBsGA1UEChMUU3ltYW50ZWMgQ29ycG9yYXRpb24xHzAdBgNVBAsTFlN5bWFudGVjIFRy",
-        "dXN0IE5ldHdvcmsxLzAtBgNVBAMTJlN5bWFudGVjIENsYXNzIDMgU2VjdXJlIFNlcnZlciBDQSAt",
-        "IEc0MB4XDTE1MTAxNjAwMDAwMFoXDTE2MTAxNTIzNTk1OVoweDELMAkGA1UEBhMCR0IxEjAQBgNV",
-        "BAgMCUJlcmtzaGlyZTEQMA4GA1UEBwwHV2luZHNvcjEVMBMGA1UECgwMQ2VudHJpY2EgUGxjMREw",
-        "DwYDVQQLDAhDbG91ZERNWjEZMBcGA1UEAwwQKi5wdWxzZW5vdy5jby51azCCASIwDQYJKoZIhvcN",
-        "AQEBBQADggEPADCCAQoCggEBAMTv343oBQ8bINi6Ufg/PGr+IPVoS7G1QbWpiF286D5Lr4zARE1W",
-        "mddcN/buUtqPYQA39dmGqvUMdRMVdhfwseTPJ3hbQfQ7euEwlCRHxrn5ljtpXBsSusZ/3eEWiKST",
-        "q6SQ62WPzGg/Zj/ERcfkAWN30o/BfOTKvB/HJIBr2rKcfDCDgTkS/OVZz3X/bL30rz3BHAynvfZZ",
-        "zpFJfjuwob553V++br29SYDuhR+wGlE4xNQwbmANcrlveU3T/JoQpEDwQALM9EME1hhWaRmLrIkA",
-        "8/p/TWLt2eE5R2swDtWX+KOAkhIIMfw4y0Krko/o3YVWWOaxhsU0fe5+rBMiVysCAwEAAaOCAWUw",
-        "ggFhMBsGA1UdEQQUMBKCECoucHVsc2Vub3cuY28udWswCQYDVR0TBAIwADAOBgNVHQ8BAf8EBAMC",
-        "BaAwHQYDVR0lBBYwFAYIKwYBBQUHAwEGCCsGAQUFBwMCMGEGA1UdIARaMFgwVgYGZ4EMAQICMEww",
-        "IwYIKwYBBQUHAgEWF2h0dHBzOi8vZC5zeW1jYi5jb20vY3BzMCUGCCsGAQUFBwICMBkaF2h0dHBz",
-        "Oi8vZC5zeW1jYi5jb20vcnBhMB8GA1UdIwQYMBaAFF9gz2GQVd+EQxSKYCqy9Xr0QxjvMCsGA1Ud",
-        "HwQkMCIwIKAeoByGGmh0dHA6Ly9zcy5zeW1jYi5jb20vc3MuY3JsMFcGCCsGAQUFBwEBBEswSTAf",
-        "BggrBgEFBQcwAYYTaHR0cDovL3NzLnN5bWNkLmNvbTAmBggrBgEFBQcwAoYaaHR0cDovL3NzLnN5",
-        "bWNiLmNvbS9zcy5jcnQwDQYJKoZIhvcNAQELBQADggEBAK95qI2E3YAYPPkGL+WPnvyI77QsElHb",
-        "raSyGoH8uu9dmZHAe6l2YHkCSuaA+5T0fwg6/y7QimBcebDYZmnpqgae8yzs0DG4ZmHp4OobQpi9",
-        "drhtl5boELwkCihpVNJnEpKu9icYmV3b/kDxxRxNFXJLSJTjGJZhudTZ10UYiZml82wYRKR6IGZ/",
-        "WI1YE2dI++LwyWAri2sdmkE08TswH7HrJUrJ2iXfHGQMoNVEI/sK5TiPC03terKOGjdklFjPHKgd",
-        "AWclLQ0O/aetKLIjJ6oF648hlQcGmKxlONzL2NwmXnuhvKgWMHXTW/pia1xNyUazZe+qud42qjkk",
-        "4QPZkQc=",
+        "MIIDEzCCAfugAwIBAgIJANC8Mvl6E/hEMA0GCSqGSIb3DQEBDAUAMCcxJTAjBgNVBAMTHG1vYmls",
+        "ZS1kZW1vLW15c3FsLmRldi5jYS5jb20wHhcNMTYwNDI4MTU0NDQ2WhcNMjYwNDI2MTU0NDQ2WjAn",
+        "MSUwIwYDVQQDExxtb2JpbGUtZGVtby1teXNxbC5kZXYuY2EuY29tMIIBIjANBgkqhkiG9w0BAQEF",
+        "AAOCAQ8AMIIBCgKCAQEAvU+UIrA830H4EfSoABfJ35NmzbBz46HCv643lkvjQLI90vcztvmys7UL",
+        "VQTlLGenAhYQVGxOo4DpxS0sqhvbChtPKEwKJn0YY60UWFivYLc03LdaLWNdJaOqicj9qiJrCKT9",
+        "G288ogqZ4W7CKnzngPN263lDuCmG3g6ybNazr9avoQ1OYPeSxR66YhLd1KaKdUH7i7BXxv5Fbnp0",
+        "YVatofum7H7edqnHMmo+sr2tFAkpt3xJCpiIVF+041TIQyGZIJaQYyUXWbzl9sItSYPNZHN0qE7y",
+        "4y0AaGxkmx7qct8rLO5EqstGiYao8hqeQTyF3KRmiJW9YFG3/W8gxMZqrwIDAQABo0IwQDAdBgNV",
+        "HQ4EFgQUfLQwgz/GeYxq/K15R/jFqvHWSb0wHwYDVR0jBBgwFoAUfLQwgz/GeYxq/K15R/jFqvHW",
+        "Sb0wDQYJKoZIhvcNAQEMBQADggEBAB2tKUZYRlt62DiqJuEnQxbNyjvHHEvP+IMilIHOGOg5Q2O+",
+        "Ev2PDQVCUpxxDrwlPZRFt5dKKA5pUW5cqupJGTxk/L0QdHg+L5u12c8HVehHMFDmC6FeJS/aq79Z",
+        "Dhx/Tw5avtdlQt7ZlNFAawlY6Zt3RSfZPRzSeydCtfTkwBEw/0D3dJici1iLkgbFp6PId9Lp5b8s",
+        "o/ycBQHa8zKk2BC8gqgHOEcSO0YsVWZlmwdGVMwkC5imaAvao45zzk7YEQUyMTbgpVYbeo9aoTnj",
+        "Kab/iJfWh2/SB6RNKuCRBS2RuFCEZlHCLFPubHy1Z7ZBF7y4FAbMvE44K0CYC7MN1yk=",
         "-----END CERTIFICATE-----"
       ]
     ]
   },
   "oauth": {
     "client": {
-      "organization": "Centrica",
-      "description": "Testing windows mobile sdk",
-      "client_name": "com.centrica.identitymine",
+      "organization": "CA Technologies",
+      "description": "What is the app used for?",
+      "client_name": "IdentityMine Test Client",
       "client_type": "confidential",
       "registered_by": "admin",
+      "client_custom": { },
       "client_ids": [
+
         {
-          "client_id": "3e4d9d7c-7f15-407b-8a80-146678134aca",
+          "client_id": "b2f965ce-ce04-43c9-977d-147f97332ae2",
           "client_secret": "",
-          "scope": "openid msso phone profile address email ",
+          "scope": "openid msso phone profile address email msso_register msso_client_register",
           "redirect_uri": "https://ios.ssosdk.ca.com/ios",
-          "environment": "ALL",
+          "environment": "iOS",
           "status": "ENABLED",
-          "registered_by": "admin"
+          "registered_by": "admin",
+          "service_ids": "",
+          "account_plan_mapping_ids": "",
+          "client_key_custom": { }
         }
       ]
     },
@@ -62,6 +58,10 @@
     "oauth_protected_endpoints": {
       "userinfo_endpoint_path": "/openid/connect/v1/userinfo"
     }
+  },
+  "mas": {
+    "scim-path": "/SCIM/MAS/v2",
+    "mas-storage-path": "/MASS/v1/Client"
   },
   "mag": {
     "system_endpoints": {

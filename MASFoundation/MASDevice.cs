@@ -4,10 +4,11 @@ This software may be modified and distributed under the terms
 of the MIT license. See the LICENSE file for details.
 */
 
-﻿using MASFoundation.Internal;
+using MASFoundation.Internal;
 using MASFoundation.Internal.Data;
 using System;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Data.Json;
 using Windows.Foundation;
@@ -25,7 +26,9 @@ namespace MASFoundation
         {
             _config = config;
             _storage = new SecureStorage();
-            _certManager = new CertManager(_storage);
+            _sharedStorage = new SharedSecureStorage();
+            _certManager = new CertManager(_sharedStorage);
+            _deviceInfoStorage = new SharedSecureStorage("DeviceInfoStorage");
         }
 
         #region Public Properties
@@ -35,33 +38,11 @@ namespace MASFoundation
         /// </summary>
         public static MASDevice Current { get; private set; }
 
-        static string _id;
         /// <summary>
         /// Device identifier
         /// </summary>
         /// 
-        public string Id
-        {
-            get
-            {
-                if (_id == null)
-                {
-                    try
-                    {
-                        // Use ASHWID if available for the device Id
-                        var hardwareToken = Windows.System.Profile.HardwareIdentification.GetPackageSpecificToken(null);
-                        var buffer = hardwareToken.Id.ToArray();
-                        _id = Convert.ToBase64String(buffer);
-                    }
-                    catch
-                    {
-                        _id = _deviceInfo.Id.ToString();
-                    }
-                }
-
-                return _id;
-            }
-        }
+        public string Id { get; private set; }
 
         /// <summary>
         /// Device name
@@ -222,11 +203,21 @@ namespace MASFoundation
             obj.SetNamedValue("magId", JsonValue.CreateStringValue(MagId));
             obj.SetNamedValue("status", JsonValue.CreateStringValue(Status));
 
-            await _storage.SetAsync(StorageKeyNames.DeviceInfo, obj.Stringify());
+            await _sharedStorage.SetAsync(StorageKeyNames.DeviceInfo, obj.Stringify());
         }
 
         async Task LoadAsync()
         {
+
+            //Since the device Id was different for different app of same publisher we had to fallback by saving the Device to the publisher shared storage and then share them between apps
+            //Issue: https://social.msdn.microsoft.com/Forums/windowsapps/en-US/78edc38b-41b9-4fe2-9bbf-20f282ddc25c/uwphow-to-make-2-apps-part-of-the-same-package?forum=wpdevelop
+            Id = await _deviceInfoStorage.GetTextAsync(StorageKeyNames.DeviceId);
+            if (string.IsNullOrEmpty(Id))
+            {
+                Id = CreateHardwareId();
+                await _deviceInfoStorage.SetAsync(StorageKeyNames.DeviceId, Id);
+            }
+
             // Install any certificate found in the server certs.
             // This is required for MAG SSL with alternative certificate authorities.
             if (_config.Server.ServerCerts != null)
@@ -288,7 +279,7 @@ namespace MASFoundation
                 _clientExpiration = expirationDate.Value;
             }
 
-            var deviceInfo = await _storage.GetTextAsync(StorageKeyNames.DeviceInfo);
+            var deviceInfo = await _sharedStorage.GetTextAsync(StorageKeyNames.DeviceInfo);
             if (deviceInfo != null)
             {
                 try
@@ -311,18 +302,40 @@ namespace MASFoundation
             }
 
             // check if we have a certificate
-            Certificate = await _certManager.GetAsync();
+            Certificate = await _certManager.GetIfExistsAsync();
 
             if (Certificate == null || DateTime.Now > Certificate.ValidTo)
             {
                 RegisteredUsername = null;
                 Certificate = null;
-                await SecureStorage.RemoveAsync(StorageKeyNames.DeviceInfo);
+                await SharedSecureStorage.RemoveAsync(StorageKeyNames.DeviceInfo);
             }
             else
             {
                 RegisteredUsername = Certificate.Subject;
             }
+        }
+
+        private string CreateHardwareId()
+        {
+            string id = null;
+            if (id == null)
+            {
+                try
+                {
+                    // Use ASHWID if available for the device Id
+                    var hardwareToken = Windows.System.Profile.HardwareIdentification.GetPackageSpecificToken(null);
+                    var buffer = hardwareToken.Id.ToArray();
+                    string base64DeviceId = Convert.ToBase64String(buffer);
+                    id = Regex.Replace(base64DeviceId, @"[^0-9a-zA-Z]+", "");
+                }
+                catch
+                {
+                    id = _deviceInfo.Id.ToString();
+                }
+            }
+
+            return id;
         }
 
         #endregion
@@ -334,6 +347,8 @@ namespace MASFoundation
         DateTime _clientExpiration = DateTime.MinValue;
         Configuration _config;
         SecureStorage _storage;
+        SharedSecureStorage _sharedStorage;
+        SharedSecureStorage _deviceInfoStorage;
         CertManager _certManager;
         EasClientDeviceInformation _deviceInfo = new EasClientDeviceInformation();
 

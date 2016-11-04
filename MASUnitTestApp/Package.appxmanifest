@@ -41,5 +41,12 @@
   </Applications>
   <Capabilities>
     <Capability Name="internetClient" />
-  </Capabilities> 
+  </Capabilities>
+  <Extensions>
+    <Extension Category="windows.publisherCacheFolders">
+      <PublisherCacheFolders>
+        <Folder Name="keys" />
+      </PublisherCacheFolders>
+    </Extension>
+  </Extensions>
 </Package>

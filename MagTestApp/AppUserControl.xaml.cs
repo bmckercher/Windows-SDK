@@ -35,7 +35,7 @@ namespace MagTestApp
         void ScrollToBottom()
         {
             var scrollViewer = FindFirstDescendant<ScrollViewer>(DebugText);
-            scrollViewer?.ScrollToVerticalOffset(scrollViewer.ScrollableHeight);
+            scrollViewer?.ChangeView(null, scrollViewer.ScrollableHeight, null);
         }
 
         T FindFirstDescendant<T>(DependencyObject parent) where T : DependencyObject

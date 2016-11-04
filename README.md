@@ -77,7 +77,6 @@ catch (Exception exp)
 	+ The SDK will then store device registration information and access token.
 3. If we have previously registered, registration and access token will be restored.
 
-
 ### After succesful registration ###
 
 After succesful registration, applications can:
@@ -86,6 +85,25 @@ After succesful registration, applications can:
 + Unregister the device.  [MASDevice.Current.UnregisterAsync](@ref MASFoundation::MASDevice::UnregisterAsync)
 + Get user information and logoff the user.  [MASUser.Current.GetInfoAsync](@ref MASFoundation::MASUser::GetInfoAsync) and [MASUser.Current.LogoffAsync](@ref MASFoundation::MASUser::LogoffAsync)
 	
+### Mobile Single Sign On ###
+
+The SDK supports mobile single sign on for applications that have the same publisher.  This means that two applications from the same publisher can share the same login.
+
+1. User signs into application A
+2. User then starts application B and both application A and B are from the same publisher.  The user is automatically signed in to application B.
+
+To enable this functionality both applications need to have the the following extension set in their package.appxmanifest.  See the following MSDN link for more information on shared cache folders: https://msdn.microsoft.com/en-us/library/windows/apps/windows.storage.applicationdata.getpublishercachefolder.aspx
+
+~~~~~~~~~~~~~~~{.xml}
+  <Extensions>
+    <Extension Category="windows.publisherCacheFolders">
+      <PublisherCacheFolders>
+        <Folder Name="keys" />
+      </PublisherCacheFolders>
+    </Extension>
+  </Extensions>
+~~~~~~~~~~~~~~~
+
 ### Debugging ###
 
 Applications can enable debug logging by setting the [MAS.LogLevel](@ref MASFoundation::MAS::LogLevel) and subscribing to event [MAS.LogMessage](@ref MASFoundation::MAS::LogMessage).
