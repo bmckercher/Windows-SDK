@@ -82,8 +82,9 @@ After succesful registration, applications can:
 ### Mobile Single Sign On ###
 
 The SDK supports mobile single sign on for applications that have the same publisher.  This means that two applications from the same publisher can share the same login.
+
 1. User signs into application A
-2. User then starts application B and both application A and B are from the same publisher.  The user is automatically signed in.
+2. User then starts application B and both application A and B are from the same publisher.  The user is automatically signed in to application B.
 
 To enable this functionality both applications need to have the the following extension set in their package.appxmanifest.  See the following MSDN link for more information on shared cache folders: https://msdn.microsoft.com/en-us/library/windows/apps/windows.storage.applicationdata.getpublishercachefolder.aspx
 
