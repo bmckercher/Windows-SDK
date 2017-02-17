@@ -6,6 +6,7 @@ The Windows Mobile SDK gives developers simple and secure access to the services
 For more information about our mobile products see [the website][mas.ca.com].
 
 ***UNSUPPORTED VERSION***
+This SDK is NOT been supported by CA at this time.
 
 ## Get Started
 Follow our step-by-step guide to [get started][get-started].
